@@ -16,4 +16,4 @@ spec:
       - name: civikzone
         image: varun5291/civikzone:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 8000
