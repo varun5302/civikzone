@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: civikzone
-        image: varun5291/civikzone:lates
+        image: varun5291/civikzone:v1
         ports:
         - containerPort: 8000
