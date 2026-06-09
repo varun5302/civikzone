@@ -1,0 +1,392 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Report - {{ month }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container-report {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 5px solid #ffc107;
+        }
+        
+        .report-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .report-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin: 5px 0;
+        }
+        
+        .report-content {
+            padding: 40px 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .stat-card.total .stat-value { color: #007bff; }
+        .stat-card.resolved .stat-value { color: #28a745; }
+        .stat-card.pending .stat-value { color: #ffc107; }
+        .stat-card.in-progress .stat-value { color: #17a2b8; }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .status-breakdown, .category-breakdown, .zone-breakdown {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .breakdown-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .breakdown-label {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+        
+        .breakdown-count {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .breakdown-bar {
+            width: 100%;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 15px;
+        }
+        
+        .breakdown-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .report-footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-report {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-print {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+        }
+        
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108,117,125,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .report-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .breakdown-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .breakdown-bar {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container-report {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+            
+            .report-footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-report">
+        <div class="report-header">
+            <h1><i class="fas fa-chart-bar"></i> Monthly Report</h1>
+            <p><strong>{{ month }}</strong></p>
+            <p>{{ user.get_full_name|default:user.username }} - {{ user.get_role_display }}</p>
+        </div>
+        
+        <div class="report-content">
+            <div class="action-buttons">
+                <button class="btn-report btn-print" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <a href="{% url 'admin_panel' %}" class="btn-report btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-label">Total Complaints</div>
+                    <div class="stat-value">{{ total_complaints }}</div>
+                </div>
+                <div class="stat-card resolved">
+                    <div class="stat-label">Resolved</div>
+                    <div class="stat-value">{{ resolved }}</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value">{{ pending }}</div>
+                </div>
+                <div class="stat-card in-progress">
+                    <div class="stat-label">In Progress</div>
+                    <div class="stat-value">{{ in_progress }}</div>
+                </div>
+            </div>
+            
+            <!-- Status Breakdown -->
+            <div class="section">
+                <h3 class="section-title"><i class="fas fa-list"></i> Status Breakdown</h3>
+                <div class="status-breakdown">
+                    {% for item in status_breakdown %}
+                        {% if item.count > 0 %}
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">{{ item.status }}</div>
+                                <div class="breakdown-count">{{ item.count }}</div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Category Breakdown -->
+            <div class="section">
+                <h3 class="section-title"><i class="fas fa-folder"></i> Top Categories</h3>
+                <div class="category-breakdown">
+                    {% for item in category_breakdown %}
+                        {% widthratio item.count total_complaints 100 as percentage %}
+                        <div class="breakdown-item">
+                            <div class="breakdown-label">{{ item.category }}</div>
+                            <div style="display: flex; align-items: center; gap: 15px; width: 60%;">
+                                <div class="breakdown-bar" style="width: 100%;">
+                                    <div class="breakdown-bar-fill" style="width: {{ percentage }}%;">
+                                        {{ percentage }}%
+                                    </div>
+                                </div>
+                                <div class="breakdown-count">{{ item.count }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Zone Breakdown (Admin Only) -->
+            {% if is_admin and zone_breakdown %}
+                <div class="section">
+                    <h3 class="section-title"><i class="fas fa-map-marker-alt"></i> Zone Breakdown</h3>
+                    <div class="zone-breakdown">
+                        {% for item in zone_breakdown %}
+                            {% widthratio item.count total_complaints 100 as percentage %}
+                            <div class="breakdown-item">
+                                <div class="breakdown-label">{{ item.zone }}</div>
+                                <div style="display: flex; align-items: center; gap: 15px; width: 60%;">
+                                    <div class="breakdown-bar" style="width: 100%;">
+                                        <div class="breakdown-bar-fill" style="width: {{ percentage }}%;">
+                                            {{ percentage }}%
+                                        </div>
+                                    </div>
+                                    <div class="breakdown-count">{{ item.count }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="report-footer">
+            <p>Report Generated on: <strong>{{ "now"|date:"d M Y, H:i" }}</strong></p>
+            <p>&copy; 2024 Civic Zone Solution. All Rights Reserved.</p>
+        </div>
+    </div>
+    
+    <script>
+        function printReport() {
+            window.print();
+        }
+        
+        // Auto-format numbers
+        document.querySelectorAll('.stat-value').forEach(el => {
+            const num = parseInt(el.textContent);
+            el.textContent = num.toLocaleString();
+        });
+    </script>
+</body>
+</html>

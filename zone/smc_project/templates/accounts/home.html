@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Zone Solutions</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-comment-alt"></i>
+                    Civic Zone Solutions
+                </div>
+                <div class="nav-right">
+
+                    <ul class="nav-links">
+                        <li><a href="{% url 'home' %}" class="active">Home</a></li>
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                        
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Welcome to SMC Complaint System</h1>
+                <p>Your voice matters in building a better community. Report issues, track progress, and help us improve our city services.</p>
+                <div class="cta-buttons">
+                    <div class="relative hero-login-wrap">
+                        <button id="login-btn" class="btn btn-primary btn-login-hero">
+                            <i class="fas fa-sign-in-alt"></i> &nbsp; Login <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                        <div id="login-dropdown" class="absolute top-full left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 hidden login-dropdown-menu">
+                            <a href="{% url 'login' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user"></i> &nbsp; User Login
+                            </a>
+                            <a href="{% url 'admin_login' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user-shield"></i> &nbsp; Admin Login
+                            </a>
+                            <div class="border-t border-gray-200"></div>
+                            <a href="{% url 'forgot_password' %}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">
+                                <i class="fas fa-key"></i> &nbsp; Forgot Password?
+                            </a>
+                        </div>
+                    </div>
+                    <a href="{% url 'register' %}" class="btn btn-secondary btn-register-hero">
+                        <i class="fas fa-user-plus"></i> &nbsp; Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Services</h2>
+                <p>We provide a comprehensive platform for citizens to report issues and track their resolution efficiently.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h3>Easy Reporting</h3>
+                    <p>Simple and intuitive forms to file complaints quickly and efficiently. Report issues with just a few clicks.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor your complaint status and receive updates in real-time. Stay informed at every step of the process.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Stay Informed</h3>
+                    <p>Get notifications about important updates and resolutions. Never miss an update on your reported issues.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Follow these simple steps to report an issue and track its resolution</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Register</h3>
+                    <p>Create your account to get started with the complaint system.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>File Complaint</h3>
+                    <p>Describe the issue in detail with location and category.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor status updates and progress on your complaint.</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Get Resolution</h3>
+                    <p>Receive updates and confirmation when issue is resolved.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Add interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if(targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if(targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Add animation to feature cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe feature cards and steps
+            document.querySelectorAll('.feature-card, .step').forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.5s, transform 0.5s';
+                observer.observe(el);
+            });
+            
+            // Button hover effects
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Login dropdown functionality
+            const loginBtn = document.getElementById('login-btn');
+            const loginDropdown = document.getElementById('login-dropdown');
+            const navLoginBtn = document.getElementById('nav-login-btn');
+            const navLoginDropdown = document.getElementById('nav-login-dropdown');
+
+            function toggleDropdown(btn, dropdown) {
+                if (!btn || !dropdown) return;
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+            }
+
+            toggleDropdown(loginBtn, loginDropdown);
+            toggleDropdown(navLoginBtn, navLoginDropdown);
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (loginBtn && loginDropdown && !loginBtn.contains(e.target) && !loginDropdown.contains(e.target)) {
+                    loginDropdown.classList.add('hidden');
+                }
+                if (navLoginBtn && navLoginDropdown && !navLoginBtn.contains(e.target) && !navLoginDropdown.contains(e.target)) {
+                    navLoginDropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

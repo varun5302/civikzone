@@ -1,0 +1,4 @@
+zone/smc_project/.env
+zone/smc_project/db.sqlite3
+zone/smc_project/**/__pycache__/
+zone/smc_project/**/*.pyc

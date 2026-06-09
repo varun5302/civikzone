@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            background: #ffffff !important;
+        }
+        .form-group {
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95));
+            border: 1px solid #e2e8f0;
+            border-radius: 0.9rem;
+            padding: 0.4rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .form-group:focus-within {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.14);
+            transform: translateY(-1px);
+        }
+        .form-group label {
+            display: block;
+            color: #334155;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            margin-bottom: 0.18rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            border: 1px solid #d7e3ef;
+            border-radius: 0.7rem;
+            background: #ffffff;
+            color: #0f172a;
+            padding: 0.65rem 0.75rem;
+            font-size: 0.88rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 0.2rem rgba(20, 184, 166, 0.13);
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #94a3b8;
+        }
+        .form-group .text-red-500 {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-radius: 0.55rem;
+            padding: 0.32rem 0.5rem;
+            color: #be123c;
+            font-size: 0.78rem;
+            margin-top: 0.5rem;
+        }
+        .register-image-side {
+            min-height: 650px;
+            display: flex;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        .register-image-side #registerCarousel,
+        .register-image-side .carousel-inner,
+        .register-image-side .carousel-item {
+            height: 100%;
+        }
+        .register-image-side::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.18), transparent 40%);
+            z-index: 1;
+        }
+        .register-image-side #registerCarousel {
+            flex: 1;
+            z-index: 2;
+        }
+        .register-image-side .carousel-item {
+            align-items: center;
+        }
+        .register-image-side .carousel-item > div {
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 20px;
+        }
+        .register-image-side .carousel-indicators {
+            margin-bottom: 1rem;
+        }
+        .register-image-side .carousel-indicators button {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            opacity: 0.55;
+        }
+        .register-image-side .carousel-control-prev,
+        .register-image-side .carousel-control-next {
+            width: 12%;
+            opacity: 0.75;
+        }
+        .register-image-side .carousel-control-prev:hover,
+        .register-image-side .carousel-control-next:hover {
+            opacity: 1;
+        }
+        @media (min-width: 768px) {
+            .register-image-side {
+                min-height: 0;
+                height: auto;
+            }
+            .register-image-side .carousel-item > div {
+                padding-top: 0;
+            }
+        }
+        .password-field-wrapper {
+            position: relative;
+        }
+        .password-field-wrapper.has-toggle input {
+            padding-right: 2.4rem;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 0.65rem;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            padding: 0;
+            line-height: 1;
+        }
+        .password-toggle-btn:hover,
+        .password-toggle-btn:focus,
+        .password-toggle-btn:active {
+            transform: translateY(-50%);
+            color: #0f172a;
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
+    <div class="container bg-white rounded-xl shadow-2xl max-w-4xl w-full overflow-hidden">
+        <div class="flex flex-col md:flex-row">
+            <!-- Image Side -->
+            <div class="md:w-1/2 bg-gradient-to-br from-green-400 to-blue-500 p-0 relative overflow-hidden register-image-side">
+                <!-- Bootstrap Carousel -->
+                <div id="registerCarousel" class="carousel slide h-full" data-bs-ride="carousel" data-bs-interval="2000">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#registerCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#registerCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#registerCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                    </div>
+                    <div class="carousel-inner h-full">
+                        <div class="carousel-item active h-full">
+                            <div class="h-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center p-8">
+                                <div class="text-center text-white">
+                                    <div class="mb-6">
+                                        <svg class="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-2xl font-bold mb-4">Join Our Community</h3>
+                                    <p class="text-green-100 text-lg">Create your account and start making a difference.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-full">
+                            <div class="h-full bg-gradient-to-br from-teal-500 to-green-600 flex items-center justify-center p-8">
+                                <div class="text-center text-white">
+                                    <div class="mb-6">
+                                        <svg class="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-2xl font-bold mb-4">Easy Registration</h3>
+                                    <p class="text-teal-100 text-lg">Quick and simple account setup process.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-full">
+                            <div class="h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-8">
+                                <div class="text-center text-white">
+                                    <div class="mb-6">
+                                        <svg class="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-2xl font-bold mb-4">Secure & Verified</h3>
+                                    <p class="text-blue-100 text-lg">Your information is safe with us.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#registerCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#registerCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Side -->
+            <div class="md:w-1/2 p-4 md:p-5 register-form-side">
+                <h2 class="text-center text-2xl font-bold text-gray-800 mb-4">Create Account</h2>
+                {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="post" class="space-y-2">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% if field.field.widget.input_type == 'password' or 'password' in field.name %}
+                                    <i class="fas fa-lock me-2"></i>
+                                {% elif 'email' in field.name %}
+                                    <i class="fas fa-envelope me-2"></i>
+                                {% elif 'phone' in field.name or 'mobile' in field.name %}
+                                    <i class="fas fa-phone me-2"></i>
+                                {% elif field.name == 'first_name' or field.name == 'last_name' %}
+                                    <i class="fas fa-user me-2"></i>
+                                {% elif 'username' in field.name %}
+                                    <i class="fas fa-user me-2"></i>
+                                {% elif 'aadhar' in field.name or 'aadhaar' in field.name %}
+                                    <i class="fas fa-id-card me-2"></i>
+                                {% elif 'zone' in field.name %}
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                {% elif 'department' in field.name %}
+                                    <i class="fas fa-building me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-pen me-2"></i>
+                                {% endif %}
+                                {{ field.label }}
+                            </label>
+                            <div class="password-field-wrapper{% if field.field.widget.input_type == 'password' %} has-toggle{% endif %}">
+                                {{ field }}
+                                {% if field.field.widget.input_type == 'password' %}
+                                    <button class="password-toggle-btn" type="button" data-target="{{ field.id_for_label }}" aria-label="Show password">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                            {% if field.errors %}
+                                <div class="text-red-500 text-sm mt-1">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition duration-300 shadow-lg">Create Account</button>
+                </form>
+                <p class="text-center mt-3 text-gray-600">
+                    Already have an account? <a href="{% url 'login' %}" class="text-green-600 hover:text-green-800 font-semibold">Sign in here</a>
+                </p>
+                <p class="text-center mt-4 text-gray-600">Welcome to Civic Zone Solution</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.password-toggle-btn');
+            const imageSide = document.querySelector('.register-image-side');
+            const formSide = document.querySelector('.register-form-side');
+            const formElement = formSide ? formSide.querySelector('form') : null;
+            const formHeading = formSide ? formSide.querySelector('h2') : null;
+            const submitButton = formElement ? formElement.querySelector('button[type="submit"]') : null;
+
+            function syncImageWithForm() {
+                if (!imageSide || !formSide || !formElement) {
+                    return;
+                }
+
+                if (window.innerWidth < 768) {
+                    imageSide.style.marginTop = '';
+                    imageSide.style.height = '';
+                    return;
+                }
+
+                const topOffset = formHeading ? formHeading.offsetTop : formElement.offsetTop;
+                const bottomOffset = submitButton
+                    ? (submitButton.offsetTop + submitButton.offsetHeight)
+                    : (formElement.offsetTop + formElement.offsetHeight);
+                const topExtra = 18;
+                const adjustedTopOffset = Math.max(topOffset - topExtra, 0);
+                const formHeight = Math.max(bottomOffset - adjustedTopOffset, 0);
+                imageSide.style.marginTop = adjustedTopOffset + 'px';
+                imageSide.style.height = formHeight + 'px';
+            }
+
+            toggleButtons.forEach(function(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const targetId = toggleBtn.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    const toggleIcon = toggleBtn.querySelector('i');
+
+                    if (!passwordInput || !toggleIcon) {
+                        return;
+                    }
+
+                    const isHidden = passwordInput.type === 'password';
+                    passwordInput.type = isHidden ? 'text' : 'password';
+                    toggleIcon.classList.toggle('fa-eye', !isHidden);
+                    toggleIcon.classList.toggle('fa-eye-slash', isHidden);
+                    toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                });
+            });
+
+            syncImageWithForm();
+            window.addEventListener('resize', syncImageWithForm);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+.table-hover tbody tr:hover {
+    background-color: rgba(139, 92, 246, 0.05);
+}
+.badge-admin {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.badge-officer {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.badge-user {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+.stats-card:hover {
+    transform: translateY(-5px);
+}

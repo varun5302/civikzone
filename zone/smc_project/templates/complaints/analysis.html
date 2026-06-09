@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Complaint Analysis - CivicZoneSolution</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: linear-gradient(180deg, #f2f7ff 0%, #eef2f7 100%);
+        }
+        .analysis-container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 30px 24px 36px;
+        }
+        .analysis-hero {
+            background: linear-gradient(135deg, #2f4f6b 0%, #34495e 48%, #3a5d7a 100%);
+            border-radius: 16px;
+            padding: 28px 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 16px 35px rgba(44, 62, 80, 0.2);
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+        .analysis-hero::before {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            right: -55px;
+            top: -55px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.09);
+        }
+        .analysis-hero::after {
+            content: "";
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            right: 90px;
+            bottom: -52px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .analysis-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .analysis-subtitle {
+            color: rgba(255, 255, 255, 0.88);
+            margin-bottom: 0;
+            font-size: 1rem;
+            max-width: 700px;
+            position: relative;
+            z-index: 1;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #dbe7f5;
+            border-radius: 14px;
+            padding: 22px 20px 20px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 100%);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+        .stat-label {
+            color: #5b6c81;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .stat-value {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.1;
+        }
+        .chart-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #dbe7f5;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+        }
+        .chart-title {
+            margin: 0 0 16px;
+            font-size: 1.15rem;
+            color: #334155;
+            font-weight: 700;
+        }
+        .chart-wrap {
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 34px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+        }
+        .status-diagram {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+        }
+        .status-diagram::after {
+            content: "";
+            position: absolute;
+            width: 165px;
+            height: 165px;
+            border-radius: 50%;
+            background: #fff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .diagram-center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .diagram-center-text span {
+            display: block;
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .diagram-legend {
+            min-width: 240px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 14px 6px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+        .legend-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .legend-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-pending { background: #f39c12; }
+        .dot-progress { background: #3498db; }
+        .dot-resolved { background: #27ae60; }
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 14px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .back-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(44, 62, 80, 0.25);
+            color: #fff;
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .analysis-container {
+                padding: 18px 14px 24px;
+            }
+            .analysis-hero {
+                padding: 20px 18px;
+            }
+            .analysis-title {
+                font-size: 1.6rem;
+            }
+            .status-diagram {
+                width: 240px;
+                height: 240px;
+            }
+            .status-diagram::after {
+                width: 125px;
+                height: 125px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <a href="{% url 'dashboard' %}" class="logo-container">
+                <i class="fas fa-city"></i>
+                <div class="logo-text">
+                    <span class="civic">Civic</span>
+                    <span class="zone">Zone</span>
+                    <span class="solution">Solution</span>
+                </div>
+            </a>
+        </div>
+        <div class="header-right">
+            <span class="user-welcome">
+                <i class="fas fa-user-circle"></i>
+                Welcome, {{ user.get_full_name|default:user.username }}!
+            </span>
+            <div class="header-links">
+                <a href="{% url 'dashboard' %}"><i class="fas fa-list"></i> My Complaints</a>
+                <a href="{% url 'submit_complaint' %}"><i class="fas fa-plus-circle"></i> New Complaint</a>
+                <a href="#" onclick="window.location.href='{% url 'logout' %}'; return false;" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="analysis-container">
+            <div class="top-actions">
+                <a href="{% url 'dashboard' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <div class="analysis-hero">
+                <h1 class="analysis-title">Complaint Analysis</h1>
+                <p class="analysis-subtitle">View through the diagram how many of your total complaints have been resolved.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Complaints</div>
+                    <div class="stat-value">{{ total_complaints }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Resolved Complaints</div>
+                    <div class="stat-value">{{ resolved_count }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Complaints</div>
+                    <div class="stat-value">{{ pending_count }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Resolved Rate</div>
+                    <div class="stat-value">{{ resolved_percentage }}%</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h2 class="chart-title"><i class="fas fa-chart-pie"></i> Complaint Status Diagram</h2>
+                <div class="chart-wrap">
+                    {% if total_complaints > 0 %}
+                        <div class="status-diagram" style="background: conic-gradient(#f39c12 0% {{ pending_percentage_end }}%, #3498db {{ pending_percentage_end }}% {{ in_progress_percentage_end }}%, #27ae60 {{ in_progress_percentage_end }}% 100%);">
+                            <div class="diagram-center-text">
+                                {{ resolved_percentage }}%
+                                <span>Resolved</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="status-diagram" style="background: #e2e8f0;">
+                            <div class="diagram-center-text">
+                                0%
+                                <span>No Data</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="diagram-legend">
+                        <div class="legend-item">
+                            <span class="legend-left"><span class="legend-dot dot-pending"></span>Pending</span>
+                            <strong>{{ pending_count }}</strong>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-left"><span class="legend-dot dot-progress"></span>In Progress</span>
+                            <strong>{{ in_progress_count }}</strong>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-left"><span class="legend-dot dot-resolved"></span>Resolved</span>
+                            <strong>{{ resolved_count }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

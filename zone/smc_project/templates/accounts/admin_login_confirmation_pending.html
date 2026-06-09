@@ -1,0 +1,398 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Your Admin Login - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .confirmation-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confirmation-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .confirmation-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .confirmation-header h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .confirmation-header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin-bottom: 0;
+        }
+
+        .confirmation-body {
+            padding: 2.5rem 2rem;
+        }
+
+        .username-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .username-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .username-display {
+            font-size: 1rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .email-section {
+            background: #f0f4ff;
+            border: 2px solid #cfe2ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .email-label {
+            font-size: 0.85rem;
+            color: #0c5dd4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .email-display {
+            font-size: 1rem;
+            color: #0c5dd4;
+            font-weight: 600;
+        }
+
+        .instruction-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .instruction-box h5 {
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instruction-box ol {
+            color: #2e7d32;
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
+
+        .instruction-box li {
+            margin-bottom: 0.6rem;
+            line-height: 1.6;
+        }
+
+        .instruction-box strong {
+            color: #2e7d32;
+        }
+
+        .security-banner {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .security-banner i {
+            font-size: 1.5rem;
+            color: #ff9800;
+        }
+
+        .security-text {
+            color: #856404;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .admin-badge i {
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back {
+            flex: 1;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 2px solid #2c3e50;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back:hover {
+            background: #2c3e50;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .timer-info {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .timer-info strong {
+            color: #e74c3c;
+        }
+
+        .security-checklist {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .security-checklist strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .security-checklist ul {
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
+
+        .security-checklist li {
+            margin-bottom: 0.4rem;
+            color: #666;
+        }
+
+        .security-checklist i {
+            color: #2c3e50;
+            margin-right: 0.3rem;
+        }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-danger {
+            background: #fee;
+            color: #c00;
+            padding: 1rem;
+            border-left: 4px solid #c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-container">
+        <div class="confirmation-header">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Confirm Admin Login</h3>
+            <p>Please verify your identity</p>
+        </div>
+
+        <div class="confirmation-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="admin-badge">
+                <i class="fas fa-user-shield"></i>
+                <span>Administrative Access Requested</span>
+            </div>
+
+            <div class="username-section">
+                <div class="username-label">Admin Username:</div>
+                <div class="username-display">{{ username }}</div>
+            </div>
+
+            <div class="email-section">
+                <div class="email-label">Verification email sent to:</div>
+                <div class="email-display">{{ email }}</div>
+            </div>
+
+            <div class="instruction-box">
+                <h5><i class="fas fa-check-double"></i> Verification Steps:</h5>
+                <ol>
+                    <li>Open your email inbox</li>
+                    <li>Find the email from <strong>CivicZoneSolution Admin Team</strong></li>
+                    <li>Click the <strong>"✓ Yes, It's Me - Confirm Login"</strong> button</li>
+                    <li>You'll be granted administrative access</li>
+                </ol>
+            </div>
+
+            <div class="security-banner">
+                <i class="fas fa-hourglass-half"></i>
+                <p class="security-text">This confirmation link is <strong>valid for 10 minutes only</strong>. For security reasons, you'll need to login again if the link expires.</p>
+            </div>
+
+            <div class="timer-info">
+                ⏱️ <strong>10 minutes</strong> remaining to confirm your identity
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'admin_login' %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Admin Login
+                </a>
+            </div>
+
+            <div class="security-checklist">
+                <strong><i class="fas fa-lock"></i> Security Verification:</strong>
+                <ul>
+                    <li><i class="fas fa-check"></i> This email is sent only to authorized administrators</li>
+                    <li><i class="fas fa-check"></i> Each login attempt creates a unique confirmation link</li>
+                    <li><i class="fas fa-check"></i> The link is tied to your IP address and browser</li>
+                    <li><i class="fas fa-check"></i> If you didn't request this login, please contact support immediately</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            const statusUrl = '{% url "admin_login_status" %}';
+            const fallbackUrl = '{% url "admin_panel" %}';
+            const pollIntervalMs = 2000;
+            let redirecting = false;
+
+            function redirectToDashboard(url) {
+                if (redirecting) {
+                    return;
+                }
+                redirecting = true;
+                window.location.replace(url || fallbackUrl);
+            }
+
+            async function checkStatus() {
+                try {
+                    const response = await fetch(statusUrl, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const payload = await response.json();
+                    if (payload.authenticated) {
+                        redirectToDashboard(payload.redirect_url);
+                    }
+                } catch (error) {
+                    console.warn('Unable to check admin login status.', error);
+                }
+            }
+
+            checkStatus();
+            window.setInterval(checkStatus, pollIntervalMs);
+        })();
+    </script>
+</body>
+</html>

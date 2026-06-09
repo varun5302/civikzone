@@ -1,0 +1,1368 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Complaint - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'css/submit_complaint.css' %}">
+</head>
+<body>
+    <!-- Dashboard Style Header -->
+    <header class="submit-header">
+        <div class="header-left">
+            <a href="{% url 'dashboard' %}" class="logo-container">
+                <i class="fas fa-clipboard-list"></i>
+                <div class="logo-text">
+                    <span>Submit Complaint</span>
+                </div>
+            </a>
+        </div>
+        <div class="header-right">
+            <span class="user-welcome">
+                <i class="fas fa-user-circle"></i>
+                Welcome, {{ user.get_full_name|default:user.username }}!
+            </span>
+            <div class="header-links">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-5">
+        <div class="card mx-auto complaint-card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Register Your Complaint
+                </h4>
+                <p class="mb-0 text-muted small">Fill in the details below to submit your complaint</p>
+            </div>
+            <div class="card-body">
+                <!-- Display messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div id="liveDuplicateWarning" class="alert alert-warning border border-warning shadow-sm mb-4" style="display:none;"></div>
+
+                {% if duplicate_warning %}
+                <div class="alert alert-warning border border-warning shadow-sm mb-4" id="duplicateWarningBlock" role="alert">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0 mt-1">
+                            {% if duplicate_warning.is_exact %}
+                                <i class="fas fa-exclamation-circle text-danger fs-4"></i>
+                            {% else %}
+                                <i class="fas fa-exclamation-triangle text-warning fs-4"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            {% if duplicate_warning.is_exact %}
+                                <h5 class="alert-heading mb-1 text-danger">Exact Duplicate Detected</h5>
+                            {% else %}
+                                <h5 class="alert-heading mb-1 text-warning">Similar Complaint Found ({{ duplicate_warning.best_score }}% match)</h5>
+                            {% endif %}
+                            <p class="mb-2">Please review matching complaints below. You can still submit and auto-link this complaint as duplicate.</p>
+                            <div class="table-responsive mt-2 mb-3">
+                                <table class="table table-sm table-bordered bg-white rounded mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#ID</th>
+                                            <th>Category</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Match</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for match in duplicate_warning.matches %}
+                                        <tr>
+                                            <td>#{{ match.complaint.complaint_id }}</td>
+                                            <td>{{ match.complaint.category }}</td>
+                                            <td>{{ match.complaint.description|truncatechars:80 }}</td>
+                                            <td>{{ match.complaint.status }}</td>
+                                            <td>{{ match.complaint.complaint_date|date:"d M Y H:i" }}</td>
+                                            <td>{{ match.similarity_score }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="submitWithForce()">
+                                <i class="fas fa-paper-plane me-1"></i>Submit Anyway (Link as Duplicate)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form method="post" enctype="multipart/form-data" id="complaintForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="force_submit" id="force_submit" value="0">
+                    
+                    <!-- Category -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-tag text-primary"></i>
+                            Category:
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subcategory -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-tags text-primary"></i>
+                            Subcategory:
+                        </label>
+                        {{ form.subcategory }}
+                        {% if form.subcategory.errors %}
+                            <div class="text-danger">{{ form.subcategory.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Zone -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-map text-primary"></i>
+                            Zone:
+                        </label>
+                        {{ form.zone }}
+                        {% if form.zone.errors %}
+                            <div class="text-danger">{{ form.zone.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            Location:
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Click on the map or drag the marker to select your location
+                        </small>
+                        <div id="map"></div>
+                        <div class="map-toolbar">
+                            <div class="map-search-group">
+                                <input type="text" id="mapSearchInput" class="form-control" placeholder="Search area, road, landmark...">
+                                <button type="button" class="btn btn-outline-primary map-action-btn" id="mapSearchBtn" onclick="searchLocationOnMap()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="map-meta mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary map-action-btn" id="locateMeBtn" onclick="locateMe()">
+                                    <i class="fas fa-location-crosshairs me-1"></i>Use My Location
+                                </button>
+                            </div>
+                        </div>
+                        {{ form.location }}
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+                        {% if form.location.errors %}
+                            <div class="text-danger">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-address-card text-primary"></i>
+                            Full Address:
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Provide your complete address details (optional)
+                        </small>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="text-danger">{{ form.address.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-phone text-primary"></i>
+                            Phone Number:
+                        </label>
+                        {{ form.phone }}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Enter 10-digit mobile number
+                        </small>
+                        {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-align-left text-primary"></i>
+                            Description:
+                        </label>
+                        {{ form.description }}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Provide detailed description of your complaint
+                        </small>
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-camera text-primary"></i>
+                            Upload Image <span class="text-danger">*</span>:
+                        </label>
+
+                        <!-- Custom Camera Button -->
+                        <div class="camera-upload-container text-center mb-3">
+                            <button type="button" class="btn btn-outline-primary camera-btn" id="cameraBtn">
+                                <i class="fas fa-camera fa-2x mb-2"></i>
+                                <br>
+                                <span class="camera-btn-text">Take Photo</span>
+                            </button>
+                            <p class="text-muted small mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Click to open camera and capture image
+                            </p>
+                        </div>
+
+                        <!-- Hidden File Input -->
+                        {{ form.proof_image }}
+
+                        <!-- Image Preview -->
+                        <div class="image-preview-container text-center" id="imagePreview" style="display: none;">
+                            <div class="image-preview-box">
+                                <img id="previewImg" src="" alt="Captured image" class="img-fluid rounded">
+                                <div class="image-preview-overlay">
+                                    <button type="button" class="btn btn-sm btn-danger" id="removeImageBtn">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-success mt-2 d-block" id="imageStatus">
+                                <i class="fas fa-check-circle me-1"></i>Image captured successfully
+                            </small>
+                        </div>
+
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Supported formats: JPG, JPEG, PNG (Max 5MB). Image is required for complaint submission.
+                        </small>
+                        {% if form.proof_image.errors %}
+                            <div class="text-danger">{{ form.proof_image.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 submit-btn" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        <span class="btn-text">Submit Complaint</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <p class="text-white fw-bold fs-5">Submitting your complaint...</p>
+        </div>
+    </div>
+
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize Bootstrap Tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Smooth scroll behavior
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+            
+            // Add active class to navbar on scroll
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.submit-nav');
+                if (!navbar) {
+                    return;
+                }
+                if (window.scrollY > 50) {
+                    navbar.style.boxShadow = '0 15px 40px rgba(15, 23, 42, 0.35)';
+                } else {
+                    navbar.style.boxShadow = '0 10px 30px rgba(15, 23, 42, 0.25)';
+                }
+            });
+        });
+        
+        let map, marker;
+        let subcategoriesByCategory = {{ subcategories_by_category|safe }};
+        let addressGeocodeTimer = null;
+
+        // Zone coordinates for Surat
+        const zoneCoordinates = {
+            'West Zone (Rander)': { lat: 21.1940, lng: 72.7890 },
+            'Central Zone': { lat: 21.1702, lng: 72.8311 },
+            'North Zone (Katargam)': { lat: 21.2320, lng: 72.8370 },
+            'East Zone – A(Varachha)': { lat: 21.2400, lng: 72.8800 },
+            'East Zone – B(Sarthana)': { lat: 21.2000, lng: 72.8900 },
+            'South Zone – A (Udhna)': { lat: 21.1500, lng: 72.8400 },
+            'South Zone – B (Kanakpur)': { lat: 21.1300, lng: 72.8200 },
+            'South West Zone (Athwa)': { lat: 21.1800, lng: 72.8000 },
+            'South East Zone (Limbayat)': { lat: 21.1400, lng: 72.8600 }
+        };
+
+        // Approximate Surat zone boundaries for fallback label inference.
+        const zoneBoundaries = {
+            'West Zone (Rander)': { latMin: 21.15, latMax: 21.25, lngMin: 72.75, lngMax: 72.85 },
+            'Central Zone': { latMin: 21.15, latMax: 21.25, lngMin: 72.80, lngMax: 72.90 },
+            'North Zone (Katargam)': { latMin: 21.20, latMax: 21.30, lngMin: 72.75, lngMax: 72.85 },
+            'East Zone – A(Varachha)': { latMin: 21.20, latMax: 21.30, lngMin: 72.85, lngMax: 72.95 },
+            'East Zone – B(Sarthana)': { latMin: 21.25, latMax: 21.35, lngMin: 72.85, lngMax: 72.95 },
+            'South Zone – A (Udhna)': { latMin: 21.10, latMax: 21.20, lngMin: 72.80, lngMax: 72.90 },
+            'South Zone – B (Kanakpur)': { latMin: 21.05, latMax: 21.15, lngMin: 72.80, lngMax: 72.90 },
+            'South West Zone (Athwa)': { latMin: 21.10, latMax: 21.20, lngMin: 72.70, lngMax: 72.80 },
+            'South East Zone (Limbayat)': { latMin: 21.10, latMax: 21.20, lngMin: 72.85, lngMax: 72.95 },
+        };
+
+        const suratAreaAliases = {
+            'central zone': 'Central Zone',
+            'west zone': 'West Zone (Rander)',
+            'rander': 'West Zone (Rander)',
+            'north zone': 'North Zone (Katargam)',
+            'katargam': 'North Zone (Katargam)',
+            'east zone a': 'East Zone – A(Varachha)',
+            'varachha': 'East Zone – A(Varachha)',
+            'east zone b': 'East Zone – B(Sarthana)',
+            'sarthana': 'East Zone – B(Sarthana)',
+            'south zone a': 'South Zone – A (Udhna)',
+            'udhna': 'South Zone – A (Udhna)',
+            'south zone b': 'South Zone – B (Kanakpur)',
+            'kanakpur': 'South Zone – B (Kanakpur)',
+            'south west zone': 'South West Zone (Athwa)',
+            'athwa': 'South West Zone (Athwa)',
+            'south east zone': 'South East Zone (Limbayat)',
+            'limbayat': 'South East Zone (Limbayat)'
+        };
+
+        function normalizeAreaText(value) {
+            return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        function resolveSuratLocalArea(addressText, selectedZone) {
+            const normalized = normalizeAreaText(addressText);
+            if (!normalized) {
+                return null;
+            }
+
+            for (const [alias, canonicalZone] of Object.entries(suratAreaAliases)) {
+                if (normalized.includes(alias)) {
+                    return {
+                        zone: canonicalZone,
+                        coords: zoneCoordinates[canonicalZone] || null,
+                    };
+                }
+            }
+
+            if (normalized.includes('surat')) {
+                return {
+                    zone: selectedZone && zoneCoordinates[selectedZone] ? selectedZone : '',
+                    coords: selectedZone && zoneCoordinates[selectedZone] ? zoneCoordinates[selectedZone] : null,
+                };
+            }
+
+            return null;
+        }
+
+        function canonicalZoneToLocality(zoneName) {
+            if (!zoneName) {
+                return '';
+            }
+
+            const bracketMatch = String(zoneName).match(/\(([^)]+)\)/);
+            if (bracketMatch && bracketMatch[1]) {
+                return bracketMatch[1].trim();
+            }
+
+            return String(zoneName)
+                .replace('Zone', '')
+                .replace(/[-–]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function buildDetailedAddress(data, fallbackAddress) {
+            const addr = (data && data.address) || {};
+            const parts = [
+                addr.house_name,
+                addr.house_number,
+                addr.building,
+                addr.amenity,
+                addr.shop,
+                addr.office,
+                addr.residential,
+                addr.commercial,
+                addr.road,
+                addr.pedestrian,
+                addr.footway,
+                addr.neighbourhood,
+                addr.locality,
+                addr.hamlet,
+                addr.suburb,
+                addr.quarter,
+                addr.city_district,
+                addr.city,
+                addr.town,
+                addr.village,
+                addr.municipality,
+                addr.state_district,
+                addr.state,
+                addr.postcode,
+                addr.country,
+            ].filter(Boolean);
+
+            const uniqueParts = [];
+            const seenParts = new Set();
+            for (const part of parts) {
+                const normalizedPart = String(part).trim().toLowerCase();
+                if (!normalizedPart || seenParts.has(normalizedPart)) {
+                    continue;
+                }
+                uniqueParts.push(String(part).trim());
+                seenParts.add(normalizedPart);
+            }
+
+            const detailedAddress = uniqueParts.join(', ');
+            if (detailedAddress) {
+                return detailedAddress;
+            }
+
+            return (data && data.display_name) || fallbackAddress;
+        }
+
+        function hasPointLevelAddress(data) {
+            const addr = (data && data.address) || {};
+            return Boolean(
+                addr.house_name ||
+                addr.house_number ||
+                addr.building ||
+                addr.amenity ||
+                addr.shop ||
+                addr.office ||
+                addr.residential ||
+                addr.commercial ||
+                addr.road ||
+                addr.pedestrian ||
+                addr.footway ||
+                addr.neighbourhood ||
+                addr.locality ||
+                addr.hamlet ||
+                addr.suburb ||
+                addr.quarter
+            );
+        }
+
+        function stripTrailingCoordinates(value) {
+            return String(value || '').replace(/\s*\([-+]?\d+(?:\.\d+)?\s*,\s*[-+]?\d+(?:\.\d+)?\)\s*$/, '').trim();
+        }
+
+        function inferZoneFromCoordinates(pos) {
+            if (!pos || typeof pos.lat === 'undefined' || typeof pos.lng === 'undefined') {
+                return '';
+            }
+
+            for (const [zoneName, bounds] of Object.entries(zoneBoundaries)) {
+                if (
+                    pos.lat >= bounds.latMin && pos.lat <= bounds.latMax &&
+                    pos.lng >= bounds.lngMin && pos.lng <= bounds.lngMax
+                ) {
+                    return zoneName;
+                }
+            }
+
+            return '';
+        }
+
+        function updateWardOptions() {
+            const zoneSelect = document.getElementById('id_zone');
+            const selectedZone = zoneSelect.value;
+            
+            if (selectedZone && zoneCoordinates[selectedZone] && map && marker) {
+                const coords = zoneCoordinates[selectedZone];
+                map.setView([coords.lat, coords.lng], 14);
+                marker.setLatLng([coords.lat, coords.lng]);
+                updateLocationInput({ lat: coords.lat, lng: coords.lng });
+            }
+        }
+
+        function updateCoordinateBadge(pos) {
+            const badge = document.getElementById('coordBadge');
+            if (badge && pos && typeof pos.lat !== 'undefined' && typeof pos.lng !== 'undefined') {
+                badge.textContent = `Lat: ${Number(pos.lat).toFixed(6)}, Lng: ${Number(pos.lng).toFixed(6)}`;
+            }
+        }
+
+        function updateLocationInput(pos, options = {}) {
+            const addressOverride = options.addressOverride;
+            const preserveAddress = options.preserveAddress === true;
+            const locationOverride = options.locationOverride;
+            document.getElementById('id_latitude').value = pos.lat;
+            document.getElementById('id_longitude').value = pos.lng;
+            updateCoordinateBadge(pos);
+
+            // Reverse geocode to get address in English
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.lat}&lon=${pos.lng}&accept-language=en&addressdetails=1&zoom=18`)
+                .then(response => response.json())
+                .then(data => {
+                    const locationInput = document.getElementById('id_location');
+                    const fallbackAddress = `Lat: ${pos.lat.toFixed(6)}, Lng: ${pos.lng.toFixed(6)}`;
+                    const address = buildDetailedAddress(data, fallbackAddress);
+                    const pointTag = `(${Number(pos.lat).toFixed(6)}, ${Number(pos.lng).toFixed(6)})`;
+
+                    let finalLocation = locationOverride || address;
+                    if (!locationOverride) {
+                        const currentValue = stripTrailingCoordinates(locationInput ? locationInput.value : '');
+                        const nextValue = stripTrailingCoordinates(finalLocation);
+                        if (!hasPointLevelAddress(data)) {
+                            const selectedZone = document.getElementById('id_zone')?.value || '';
+                            const inferredZone = selectedZone || inferZoneFromCoordinates(pos);
+                            const inferredLocality = canonicalZoneToLocality(inferredZone);
+                            if (inferredLocality) {
+                                finalLocation = `${inferredLocality}, Surat, Gujarat ${pointTag}`;
+                            } else {
+                                finalLocation = `${nextValue} ${pointTag}`;
+                            }
+                        } else if (currentValue && currentValue.toLowerCase() === nextValue.toLowerCase()) {
+                            finalLocation = `${nextValue} ${pointTag}`;
+                        }
+                    }
+
+                    if (locationInput) {
+                        locationInput.value = finalLocation;
+                    }
+                    // Auto-fill the full address only for map/location selections.
+                    const addressField = document.getElementById('id_address');
+                    if (addressField) {
+                        if (addressOverride) {
+                            addressField.value = addressOverride;
+                        } else if (!preserveAddress) {
+                            addressField.value = address;
+                        }
+                    }
+                    realtimeDuplicateCheck();
+                })
+                .catch(() => {
+                    const fallbackAddress = `Lat: ${pos.lat.toFixed(6)}, Lng: ${pos.lng.toFixed(6)}`;
+                    document.getElementById('id_location').value = locationOverride || fallbackAddress;
+                    // Auto-fill the full address only for map/location selections.
+                    const addressField = document.getElementById('id_address');
+                    if (addressField) {
+                        if (addressOverride) {
+                            addressField.value = addressOverride;
+                        } else if (!preserveAddress) {
+                            addressField.value = fallbackAddress;
+                        }
+                    }
+                    realtimeDuplicateCheck();
+                });
+        }
+
+        function initMap() {
+            // Default to Surat city center
+            const defaultPos = { lat: 21.1702, lng: 72.8311 };
+
+            map = L.map('map', {
+                zoomControl: true,
+                minZoom: 11,
+                maxZoom: 19
+            }).setView([defaultPos.lat, defaultPos.lng], 15);
+
+            const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            });
+
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
+            });
+
+            streetLayer.addTo(map);
+
+            L.control.layers(
+                {
+                    'Street View': streetLayer,
+                    'Satellite View': satelliteLayer
+                },
+                null,
+                { position: 'topright', collapsed: true }
+            ).addTo(map);
+
+            L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+            marker = L.marker([defaultPos.lat, defaultPos.lng], { draggable: true }).addTo(map);
+
+            // Keep default map center on Surat until user manually searches or clicks "Use My Location".
+            updateLocationInput(defaultPos);
+
+            map.on('click', (e) => {
+                marker.setLatLng(e.latlng);
+                updateLocationInput(e.latlng);
+            });
+
+            marker.on('dragend', () => {
+                const pos = marker.getLatLng();
+                updateLocationInput(pos);
+            });
+
+            updateCoordinateBadge(defaultPos);
+        }
+
+        function searchLocationOnMap() {
+            const searchInput = document.getElementById('mapSearchInput');
+            if (!searchInput || !searchInput.value.trim()) {
+                return;
+            }
+
+            const query = encodeURIComponent(searchInput.value.trim());
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&accept-language=en`)
+                .then(response => response.json())
+                .then(results => {
+                    if (!Array.isArray(results) || results.length === 0) {
+                        alert('No location found. Please try another landmark or area name.');
+                        return;
+                    }
+
+                    const result = results[0];
+                    const pos = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+                    map.setView([pos.lat, pos.lng], 17);
+                    marker.setLatLng([pos.lat, pos.lng]);
+                    updateLocationInput(pos);
+                })
+                .catch(() => {
+                    alert('Location search failed. Please try again.');
+                });
+        }
+
+        function locateMe() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setView([pos.lat, pos.lng], 17);
+                    marker.setLatLng([pos.lat, pos.lng]);
+                    updateLocationInput(pos);
+                },
+                () => {
+                    alert('Unable to fetch your current location. Please allow location permission.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        function geocodeAddressToMap(showFailureAlert = false) {
+            const addressInput = document.getElementById('id_address');
+            const zoneSelect = document.getElementById('id_zone');
+            if (!addressInput) {
+                return Promise.resolve(true);
+            }
+
+            const addressText = (addressInput.value || '').trim();
+            if (!addressText) {
+                return Promise.resolve(true);
+            }
+
+            const localMatch = resolveSuratLocalArea(addressText, zoneSelect ? zoneSelect.value : '');
+            if (localMatch && localMatch.coords && map && marker) {
+                const localityName = canonicalZoneToLocality(localMatch.zone) || addressText;
+                const locationLabel = normalizeAreaText(localityName).includes('surat')
+                    ? localityName
+                    : `${localityName}, Surat, Gujarat`;
+                map.setView([localMatch.coords.lat, localMatch.coords.lng], 14);
+                marker.setLatLng([localMatch.coords.lat, localMatch.coords.lng]);
+                updateLocationInput(localMatch.coords, {
+                    addressOverride: addressText,
+                    locationOverride: locationLabel,
+                    preserveAddress: true,
+                });
+                return Promise.resolve(true);
+            }
+
+            const query = encodeURIComponent(`${addressText}, Surat, Gujarat, India`);
+
+            return fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${query}&addressdetails=1&limit=1&accept-language=en`)
+                .then((response) => response.json())
+                .then((results) => {
+                    if (!Array.isArray(results) || results.length === 0) {
+                        if (localMatch) {
+                            if (localMatch.coords && map && marker) {
+                                const localityName = canonicalZoneToLocality(localMatch.zone) || addressText;
+                                const locationLabel = normalizeAreaText(localityName).includes('surat')
+                                    ? localityName
+                                    : `${localityName}, Surat, Gujarat`;
+                                map.setView([localMatch.coords.lat, localMatch.coords.lng], 14);
+                                marker.setLatLng([localMatch.coords.lat, localMatch.coords.lng]);
+                                updateLocationInput(localMatch.coords, {
+                                    addressOverride: addressText,
+                                    locationOverride: locationLabel,
+                                    preserveAddress: true,
+                                });
+                            }
+                            return true;
+                        }
+                        if (showFailureAlert) {
+                            alert('Please enter a valid Surat area, zone, or full address.');
+                        }
+                        return false;
+                    }
+
+                    const result = results[0];
+                    const displayName = (result.display_name || '').toLowerCase();
+                    const addr = result.address || {};
+                    const cityBlob = [addr.city, addr.town, addr.municipality, addr.county, addr.state_district]
+                        .filter(Boolean)
+                        .join(' ')
+                        .toLowerCase();
+                    const stateBlob = (addr.state || '').toLowerCase();
+                    const countryBlob = (addr.country || '').toLowerCase();
+
+                    const isSurat = (cityBlob.includes('surat') || displayName.includes('surat')) &&
+                        (stateBlob.includes('gujarat') || displayName.includes('gujarat')) &&
+                        (countryBlob.includes('india') || displayName.includes('india'));
+
+                    if (!isSurat && !localMatch) {
+                        if (showFailureAlert) {
+                            alert('Only Surat addresses are allowed for complaint submission.');
+                        }
+                        return false;
+                    }
+
+                    if (!isSurat && localMatch && localMatch.coords) {
+                        if (map && marker) {
+                            const localityName = canonicalZoneToLocality(localMatch.zone) || addressText;
+                            const locationLabel = normalizeAreaText(localityName).includes('surat')
+                                ? localityName
+                                : `${localityName}, Surat, Gujarat`;
+                            map.setView([localMatch.coords.lat, localMatch.coords.lng], 14);
+                            marker.setLatLng([localMatch.coords.lat, localMatch.coords.lng]);
+                            updateLocationInput(localMatch.coords, {
+                                addressOverride: addressText,
+                                locationOverride: locationLabel,
+                                preserveAddress: true,
+                            });
+                        }
+                        return true;
+                    }
+
+                    const pos = {
+                        lat: parseFloat(result.lat),
+                        lng: parseFloat(result.lon),
+                    };
+
+                    if (map && marker && !Number.isNaN(pos.lat) && !Number.isNaN(pos.lng)) {
+                        map.setView([pos.lat, pos.lng], 17);
+                        marker.setLatLng([pos.lat, pos.lng]);
+                        updateLocationInput(pos);
+                    }
+
+                    return true;
+                })
+                .catch(() => {
+                    if (showFailureAlert) {
+                        alert('Address validation failed. Please try again.');
+                    }
+                    return false;
+                });
+        }
+
+        function geocodeLocationInputToMap(showFailureAlert = false) {
+            const locationInput = document.getElementById('id_location');
+            if (!locationInput) {
+                return Promise.resolve(true);
+            }
+
+            const locationText = (locationInput.value || '').trim();
+            if (!locationText) {
+                return Promise.resolve(true);
+            }
+
+            const query = encodeURIComponent(`${locationText}, Surat, Gujarat, India`);
+            return fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${query}&addressdetails=1&limit=1&accept-language=en`)
+                .then((response) => response.json())
+                .then((results) => {
+                    if (!Array.isArray(results) || results.length === 0) {
+                        if (showFailureAlert) {
+                            alert('Please enter a valid Surat location.');
+                        }
+                        return false;
+                    }
+
+                    const result = results[0];
+                    const pos = {
+                        lat: parseFloat(result.lat),
+                        lng: parseFloat(result.lon),
+                    };
+
+                    if (map && marker && !Number.isNaN(pos.lat) && !Number.isNaN(pos.lng)) {
+                        map.setView([pos.lat, pos.lng], 17);
+                        marker.setLatLng([pos.lat, pos.lng]);
+                        // Keep any manually entered full address intact.
+                        updateLocationInput(pos, { preserveAddress: true });
+                    }
+
+                    return true;
+                })
+                .catch(() => {
+                    if (showFailureAlert) {
+                        alert('Location validation failed. Please try again.');
+                    }
+                    return false;
+                });
+        }
+
+        function handleCategoryChange() {
+            const categorySelect = document.getElementById('id_category');
+            const subcategorySelect = document.getElementById('id_subcategory');
+            const otherCategoryDiv = document.getElementById('otherCategoryDiv');
+            const otherCategoryInput = document.getElementById('id_other_category');
+            
+            // Reset subcategory
+            subcategorySelect.value = '';
+            
+            // Show/hide other category input
+            if (otherCategoryDiv) {
+                if (categorySelect.value === 'Other') {
+                    otherCategoryDiv.style.display = 'block';
+                    if (otherCategoryInput) otherCategoryInput.required = true;
+                } else {
+                    otherCategoryDiv.style.display = 'none';
+                    if (otherCategoryInput) otherCategoryInput.required = false;
+                }
+            }
+            
+            // Clear all subcategory options except first and "Other"
+            while (subcategorySelect.options.length > 0) {
+                subcategorySelect.remove(0);
+            }
+            
+            // Add default option
+            const defaultOption = new Option('Select Subcategory', '');
+            subcategorySelect.add(defaultOption);
+            
+            // Add subcategories based on selected category
+            const selectedCategory = categorySelect.value;
+            if (selectedCategory && selectedCategory !== 'Other') {
+                const subcategories = subcategoriesByCategory[selectedCategory] || [];
+                subcategories.forEach(sub => {
+                    const option = new Option(sub, sub);
+                    subcategorySelect.add(option);
+                });
+            }
+            
+            // Add "Other" option
+            const otherOption = new Option('Other', 'Other');
+            subcategorySelect.add(otherOption);
+        }
+
+        function validatePhoneNumber(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            return cleaned.length === 10;
+        }
+
+        // Camera Upload Functionality
+        function initCameraUpload() {
+            const cameraBtn = document.getElementById('cameraBtn');
+            const fileInput = document.getElementById('id_proof_image_hidden');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeBtn = document.getElementById('removeImageBtn');
+            const imageStatus = document.getElementById('imageStatus');
+            const cameraContainer = document.querySelector('.camera-upload-container');
+
+            // Camera button click handler
+            cameraBtn.addEventListener('click', async function() {
+                try {
+                    // Check if camera is supported
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        alert('Camera not supported on this device. Please use file upload instead.');
+                        fileInput.click();
+                        return;
+                    }
+
+                    // Request camera access
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment' // Use back camera on mobile
+                        }
+                    });
+
+                    // Create video element for camera preview
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    video.playsInline = true; // Important for mobile
+
+                    // Create capture button
+                    const captureBtn = document.createElement('button');
+                    captureBtn.textContent = 'Capture Photo';
+                    captureBtn.className = 'btn btn-success mt-2';
+
+                    // Create cancel button
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'btn btn-secondary mt-2 ms-2';
+
+                    // Create modal for camera
+                    const cameraModal = document.createElement('div');
+                    cameraModal.className = 'modal fade show';
+                    cameraModal.style.display = 'block';
+                    cameraModal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    cameraModal.innerHTML = `
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Take Photo</h5>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <video id="cameraVideo" autoplay playsinline style="width: 100%; max-height: 400px;"></video>
+                                    <div class="mt-3">
+                                        <button id="captureBtn" class="btn btn-success">Capture Photo</button>
+                                        <button id="cancelBtn" class="btn btn-secondary ms-2">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.body.appendChild(cameraModal);
+
+                    // Get modal elements
+                    const modalVideo = cameraModal.querySelector('#cameraVideo');
+                    const modalCaptureBtn = cameraModal.querySelector('#captureBtn');
+                    const modalCancelBtn = cameraModal.querySelector('#cancelBtn');
+
+                    // Set video stream
+                    modalVideo.srcObject = stream;
+
+                    // Capture photo
+                    modalCaptureBtn.addEventListener('click', function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = modalVideo.videoWidth;
+                        canvas.height = modalVideo.videoHeight;
+                        ctx.drawImage(modalVideo, 0, 0);
+
+                        // Convert to blob
+                        canvas.toBlob(function(blob) {
+                            const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+
+                            // Validate file size
+                            const maxSize = 5 * 1024 * 1024; // 5MB
+                            if (file.size > maxSize) {
+                                alert('Captured image is too large. Please try again.');
+                                return;
+                            }
+
+                            // Create file list for input
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            fileInput.files = dt.files;
+
+                            // Show preview
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                previewImg.src = e.target.result;
+                                imagePreview.style.display = 'block';
+                                cameraContainer.style.display = 'none';
+                                imageStatus.textContent = `Image captured: camera_capture.jpg (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                                previewImg.classList.add('image-captured');
+                            };
+                            reader.readAsDataURL(file);
+
+                            // Close modal and stop stream
+                            document.body.removeChild(cameraModal);
+                            stream.getTracks().forEach(track => track.stop());
+                        }, 'image/jpeg', 0.8);
+                    });
+
+                    // Cancel camera
+                    modalCancelBtn.addEventListener('click', function() {
+                        document.body.removeChild(cameraModal);
+                        stream.getTracks().forEach(track => track.stop());
+                    });
+
+                } catch (error) {
+                    console.error('Camera access error:', error);
+                    alert('Unable to access camera. Please use file upload instead.');
+                    fileInput.click();
+                }
+            });
+
+            // File selection handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Please select a valid image file (JPG, JPEG, or PNG).');
+                        resetFileInput();
+                        return;
+                    }
+
+                    // Validate file size (5MB max)
+                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    if (file.size > maxSize) {
+                        alert('Image size must be less than 5MB.');
+                        resetFileInput();
+                        return;
+                    }
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        cameraContainer.style.display = 'none';
+                        imageStatus.textContent = `Image selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                        previewImg.classList.add('image-captured');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Remove image handler
+            removeBtn.addEventListener('click', function() {
+                resetFileInput();
+            });
+
+            function resetFileInput() {
+                fileInput.value = '';
+                imagePreview.style.display = 'none';
+                cameraContainer.style.display = 'block';
+                previewImg.classList.remove('image-captured');
+            }
+        }
+
+        function submitWithForce() {
+            const forceInput = document.getElementById('force_submit');
+            const form = document.getElementById('complaintForm');
+            if (forceInput && form) {
+                forceInput.value = '1';
+                form.submit();
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return '';
+        }
+
+        function renderLiveDuplicateWarning(data) {
+            const container = document.getElementById('liveDuplicateWarning');
+            if (!container) {
+                return;
+            }
+
+            if (!data || !data.matches || data.matches.length === 0) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            const title = data.is_exact
+                ? '<h5 class="alert-heading mb-2 text-danger">Exact duplicate detected (live)</h5>'
+                : `<h5 class="alert-heading mb-2 text-warning">Similar complaints found (live): ${data.best_score}%</h5>`;
+
+            const rows = data.matches.map((m) => {
+                const badge = m.match_type === 'exact'
+                    ? `<span class="badge bg-danger">${m.similarity_score}% Exact</span>`
+                    : `<span class="badge bg-warning text-dark">${m.similarity_score}% Similar</span>`;
+                return `
+                    <tr>
+                        <td>#${m.complaint_id}</td>
+                        <td>${m.category}</td>
+                        <td>${(m.description || '').slice(0, 80)}</td>
+                        <td>${m.status}</td>
+                        <td>${m.date}</td>
+                        <td>${badge}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                ${title}
+                <p class="mb-2">Current database matches found while typing. This is real-time, not static.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered bg-white mb-2">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#ID</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Match</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+
+        const realtimeDuplicateCheck = (() => {
+            let timer = null;
+            return function trigger() {
+                clearTimeout(timer);
+                timer = setTimeout(async () => {
+                    const payload = {
+                        category: document.getElementById('id_category')?.value || '',
+                        other_category: document.getElementById('id_other_category')?.value || '',
+                        subcategory: document.getElementById('id_subcategory')?.value || '',
+                        other_subcategory: document.getElementById('id_other_subcategory')?.value || '',
+                        zone: document.getElementById('id_zone')?.value || '',
+                        location: document.getElementById('id_location')?.value || '',
+                        description: document.getElementById('id_description')?.value || '',
+                    };
+
+                    if (!payload.category || !payload.zone || !payload.description || payload.description.length < 15) {
+                        renderLiveDuplicateWarning({ matches: [] });
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('{% url "check_duplicate_realtime" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken'),
+                            },
+                            body: JSON.stringify(payload),
+                        });
+                        if (!response.ok) {
+                            return;
+                        }
+                        const data = await response.json();
+                        renderLiveDuplicateWarning(data);
+                    } catch (error) {
+                        console.error('Realtime duplicate check failed:', error);
+                    }
+                }, 400);
+            };
+        })();
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            initCameraUpload(); // Initialize camera upload functionality
+            
+            // Set up category change handler
+            const categorySelect = document.getElementById('id_category');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', handleCategoryChange);
+                categorySelect.addEventListener('change', realtimeDuplicateCheck);
+                handleCategoryChange(); // Initial call
+            }
+
+            const subcategorySelect = document.getElementById('id_subcategory');
+            if (subcategorySelect) {
+                subcategorySelect.addEventListener('change', realtimeDuplicateCheck);
+            }
+
+            const zoneSelect = document.getElementById('id_zone');
+            if (zoneSelect) {
+                zoneSelect.addEventListener('change', realtimeDuplicateCheck);
+            }
+
+            const locationInput = document.getElementById('id_location');
+            if (locationInput) {
+                locationInput.addEventListener('input', realtimeDuplicateCheck);
+                locationInput.addEventListener('blur', function() {
+                    geocodeLocationInputToMap(false);
+                });
+                locationInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        geocodeLocationInputToMap(true);
+                    }
+                });
+            }
+
+            const descriptionInput = document.getElementById('id_description');
+            if (descriptionInput) {
+                descriptionInput.addEventListener('input', realtimeDuplicateCheck);
+            }
+
+            const mapSearchInput = document.getElementById('mapSearchInput');
+            if (mapSearchInput) {
+                mapSearchInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        searchLocationOnMap();
+                    }
+                });
+            }
+
+            const otherCategoryInput = document.getElementById('id_other_category');
+            if (otherCategoryInput) {
+                otherCategoryInput.addEventListener('input', realtimeDuplicateCheck);
+            }
+
+            const otherSubcategoryInput = document.getElementById('id_other_subcategory');
+            if (otherSubcategoryInput) {
+                otherSubcategoryInput.addEventListener('input', realtimeDuplicateCheck);
+            }
+
+            const addressInput = document.getElementById('id_address');
+            if (addressInput) {
+                addressInput.addEventListener('input', function() {
+                    window.clearTimeout(addressGeocodeTimer);
+                    addressGeocodeTimer = window.setTimeout(() => {
+                        geocodeAddressToMap(false);
+                    }, 800);
+                });
+
+                addressInput.addEventListener('blur', function() {
+                    window.clearTimeout(addressGeocodeTimer);
+                    geocodeAddressToMap(false);
+                });
+
+                addressInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        window.clearTimeout(addressGeocodeTimer);
+                        geocodeAddressToMap(true);
+                    }
+                });
+            }
+            
+            // Phone number validation
+            const phoneInput = document.getElementById('id_phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, ''); // Only allow digits
+                    
+                    if (validatePhoneNumber(this.value)) {
+                        this.classList.remove('is-invalid');
+                    } else {
+                        this.classList.add('is-invalid');
+                    }
+                });
+            }
+            
+            // Form validation
+            const form = document.getElementById('complaintForm');
+            if (form) {
+                form.addEventListener('submit', async function(event) {
+                    // Validate phone number
+                    const phone = document.getElementById('id_phone').value;
+                    if (!validatePhoneNumber(phone)) {
+                        event.preventDefault();
+                        alert('Please enter a valid 10-digit phone number');
+                        return false;
+                    }
+                    
+                    // Validate location
+                    const lat = document.getElementById('id_latitude').value;
+                    const lng = document.getElementById('id_longitude').value;
+                    const addressInputEl = document.getElementById('id_address');
+                    const hasAddressText = !!(addressInputEl && addressInputEl.value.trim());
+                    if ((!lat || !lng) && !hasAddressText) {
+                        event.preventDefault();
+                        alert('Please select a location on the map');
+                        return false;
+                    }
+
+                    // Validate image
+                    const imageInput = document.getElementById('id_proof_image_hidden');
+                    if (!imageInput.files || imageInput.files.length === 0) {
+                        event.preventDefault();
+                        // Automatically open camera instead of showing alert
+                        const cameraBtn = document.getElementById('cameraBtn');
+                        if (cameraBtn) {
+                            cameraBtn.click();
+                        }
+                        return false;
+                    }
+
+                    // Address geocoding happens while typing or on blur to avoid blocking submit.
+                    
+                    // Show loading overlay
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    const submitBtn = document.getElementById('submitBtn');
+                    
+                    if (loadingOverlay && submitBtn) {
+                        loadingOverlay.style.display = 'flex';
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i><span class="btn-text">Submitting...</span>';
+                    }
+                    
+                    return true;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

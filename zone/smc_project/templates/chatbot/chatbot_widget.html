@@ -1,0 +1,74 @@
+<!-- Chatbot Widget -->
+<div class="chatbot-drawer" aria-label="AI Chatbot">
+    <div class="chatbot-fab-wrap">
+        <a href="#" class="chatbot-fab" id="chatbot-toggle" title="AI Chatbot" aria-label="AI Chatbot">
+            <i class="fas fa-robot"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Chatbot Window -->
+<div id="chatbot-window" class="chatbot-window">
+    <div class="chatbot-header">
+        <div class="chatbot-header-content">
+            <i class="fas fa-robot"></i>
+            <span>SMC Assistant</span>
+        </div>
+        <div class="chatbot-header-actions">
+            <button id="chatbot-menu-toggle" class="chatbot-menu-btn" title="More options" aria-label="More options">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div id="chatbot-menu-dropdown" class="chatbot-menu-dropdown">
+                <button type="button" id="chatbot-view-history" class="chatbot-menu-item">
+                    <i class="fas fa-clock-rotate-left"></i> Chat History
+                </button>
+                <button type="button" id="chatbot-clear-history" class="chatbot-menu-item danger-item">
+                    <i class="fas fa-trash"></i> Clear History
+                </button>
+            </div>
+            <button id="chatbot-close" class="chatbot-close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="chatbot-history-panel" class="chatbot-history-panel" aria-hidden="true">
+        <div class="chatbot-history-header">
+            <span>Previous Chats</span>
+            <button type="button" id="chatbot-history-close" class="chatbot-history-close" aria-label="Back to chat">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+        </div>
+        <div id="chatbot-history-list" class="chatbot-history-list"></div>
+    </div>
+
+    <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chatbot-message bot-message">
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <p>Hello! 👋 I'm your intelligent SMC Assistant.<br><br>I can help you with:<br>🎯 Submit & track complaints<br>👤 Account management<br>💡 Smart suggestions<br>📞 Contact information<br><br>Try asking me anything!</p>
+                <div class="quick-replies">
+                    <button class="quick-reply-btn" data-message="Show my complaints">My Complaints</button>
+                    <button class="quick-reply-btn" data-message="How to submit complaint?">Submit Complaint</button>
+                    <button class="quick-reply-btn" data-message="Contact information">Contact SMC</button>
+                    <button class="quick-reply-btn" data-message="Help">Help</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chatbot-input-area">
+        <input 
+            type="text" 
+            id="chatbot-input" 
+            class="chatbot-input" 
+            placeholder="Type your message..."
+            autocomplete="off"
+        >
+        <button id="chatbot-send" class="chatbot-send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat History - SMC Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1f2937;
+        }
+
+        .page-wrap {
+            max-width: 980px;
+            margin: 28px auto;
+            padding: 0 16px;
+        }
+
+        .history-card {
+            background: #ffffff;
+            border: 1px solid #dbe3ee;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .history-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-tools button,
+        .history-tools a {
+            border: none;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.22);
+            transition: background 0.2s ease;
+        }
+
+        .history-tools button:hover,
+        .history-tools a:hover {
+            background: rgba(255, 255, 255, 0.32);
+            color: #ffffff;
+        }
+
+        .history-body {
+            max-height: 72vh;
+            overflow: auto;
+            padding: 14px;
+            background: #f8fafc;
+        }
+
+        .history-entry {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .history-time {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .history-line {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .history-line strong {
+            color: #111827;
+        }
+
+        .empty-state {
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #64748b;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="history-card">
+            <div class="history-header">
+                <div class="history-title">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>SMC Assistant Chat History</span>
+                </div>
+                <div class="history-tools">
+                    <button type="button" id="clearHistoryBtn"><i class="fas fa-trash me-1"></i>Clear</button>
+                    <a href="{% url 'dashboard' %}"><i class="fas fa-arrow-left me-1"></i>Back</a>
+                </div>
+            </div>
+            <div class="history-body" id="historyContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const CHAT_HISTORY_KEY = 'smc_chatbot_history_v1';
+            const historyContainer = document.getElementById('historyContainer');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+            function escapeHtml(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function loadHistory() {
+                try {
+                    const raw = localStorage.getItem(CHAT_HISTORY_KEY);
+                    if (!raw) return [];
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function renderHistory() {
+                const items = loadHistory();
+                if (!items.length) {
+                    historyContainer.innerHTML = '<div class="empty-state">No chat history found.</div>';
+                    return;
+                }
+
+                historyContainer.innerHTML = items
+                    .slice()
+                    .reverse()
+                    .map(function (item) {
+                        const dt = new Date(item.at || '');
+                        const timeText = isNaN(dt.getTime()) ? '' : dt.toLocaleString();
+                        return '' +
+                            '<div class="history-entry">' +
+                                '<div class="history-time">' + escapeHtml(timeText) + '</div>' +
+                                '<div class="history-line"><strong>You:</strong> ' + escapeHtml(item.user || '') + '</div>' +
+                                '<div class="history-line"><strong>Bot:</strong> ' + escapeHtml(item.bot || '') + '</div>' +
+                            '</div>';
+                    })
+                    .join('');
+            }
+
+            clearHistoryBtn.addEventListener('click', function () {
+                localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify([]));
+                renderHistory();
+            });
+
+            renderHistory();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .message-modal .modal-content {
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 22px 50px rgba(20, 45, 72, 0.24);
+        }
+        .message-modal .modal-header {
+            border-bottom: none;
+            color: white;
+            padding: 1.1rem 1.4rem;
+        }
+        .message-modal .modal-body {
+            padding: 1.4rem;
+            font-size: 1rem;
+            color: #24384d;
+        }
+        .message-modal.success .modal-header {
+            background: linear-gradient(135deg, #1d8f4d 0%, #2bb673 100%);
+        }
+        .message-modal.error .modal-header,
+        .message-modal.danger .modal-header {
+            background: linear-gradient(135deg, #c53030 0%, #ef5350 100%);
+        }
+        .message-modal.info .modal-header {
+            background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+        }
+        .message-modal.warning .modal-header {
+            background: linear-gradient(135deg, #b7791f 0%, #f6ad55 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
+    <div class="container bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <h2 class="text-center text-2xl font-bold text-gray-800 mb-6">Welcome to your Dashboard, {{ user.username }}!</h2>
+        <div class="space-y-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-600"><strong>Your Role:</strong> <span class="text-blue-600">{{ user.get_role_display }}</span></p>
+                <p class="text-sm text-gray-600"><strong>Email:</strong> {{ user.email }}</p>
+                <p class="text-sm text-gray-600"><strong>Member since:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <button onclick="window.location.href='{% url 'dashboard' %}'" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition duration-300 shadow-lg">View My Complaints</button>
+            <button onclick="if(confirm('Are you sure you want to logout?')) window.location.href='{% url 'logout' %}'" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition duration-300 shadow-lg">Logout</button>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if forloop.first %}
+                <div class="modal fade message-modal {{ message.tags }}" id="messageModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title mb-0">
+                                    {% if 'success' in message.tags %}
+                                        <i class="fas fa-circle-check me-2"></i>Success
+                                    {% elif 'error' in message.tags or 'danger' in message.tags %}
+                                        <i class="fas fa-triangle-exclamation me-2"></i>Error
+                                    {% elif 'warning' in message.tags %}
+                                        <i class="fas fa-triangle-exclamation me-2"></i>Warning
+                                    {% else %}
+                                        <i class="fas fa-circle-info me-2"></i>Message
+                                    {% endif %}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {{ message }}
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const messageModal = document.getElementById('messageModal');
+            if (messageModal) {
+                new bootstrap.Modal(messageModal, {
+                    backdrop: 'static',
+                    keyboard: true
+                }).show();
+            }
+        });
+    </script>
+</body>
+</html>

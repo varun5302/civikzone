@@ -1,0 +1,480 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer Performance Report - {{ selected_zone }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container-report {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #4682B4 0%, #6495ED 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 5px solid #ffc107;
+        }
+        
+        .report-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .report-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin: 5px 0;
+        }
+        
+        .report-content {
+            padding: 40px 30px;
+        }
+        
+        .zone-selector {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .zone-selector label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .zone-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4682B4;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .zone-selector select:focus {
+            outline: none;
+            border-color: #4682B4;
+            box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4682B4;
+        }
+        
+        .officers-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .officers-table thead {
+            background: linear-gradient(135deg, #4682B4 0%, #6495ED 100%);
+            color: white;
+        }
+        
+        .officers-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 3px solid #4682B4;
+        }
+        
+        .officers-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .officers-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .officers-table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            cursor: pointer;
+        }
+        
+        .officer-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .performance-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .performance-excellent {
+            background: #28a745;
+            color: white;
+        }
+        
+        .performance-good {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .performance-average {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .performance-poor {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4682B4;
+        }
+        
+        .stat-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .bar-container {
+            width: 150px;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4682B4, #6495ED);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+        
+        .officer-detail {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .resolution-time {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        .report-footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-report {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-print {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108,117,125,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .report-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .officers-table {
+                font-size: 0.9rem;
+            }
+            
+            .officers-table th,
+            .officers-table td {
+                padding: 10px 8px;
+            }
+            
+            .bar-container {
+                width: 100px;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container-report {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .zone-selector {
+                display: none;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+            
+            .report-footer {
+                display: none;
+            }
+            
+            .officers-table tbody tr:hover {
+                background: white;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-report">
+        <div class="report-header">
+            <h1><i class="fas fa-star-half-alt"></i> Officer Performance Report</h1>
+            <p><strong>{% if selected_zone == "All Zones" %}All Zones{% else %}{{ selected_zone }}{% endif %}</strong></p>
+            <p>{{ user.get_full_name|default:user.username }} - {{ user.get_role_display }}</p>
+        </div>
+        
+        <div class="report-content">
+            <div class="action-buttons">
+                <button class="btn-report btn-print" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <a href="{% url 'admin_panel' %}" class="btn-report btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <!-- Zone Selector -->
+            {% if is_admin %}
+                <div class="zone-selector">
+                    <label for="zoneSelect"><i class="fas fa-map-pin"></i> Select Zone:</label>
+                    <form method="get" id="zoneForm">
+                        <select id="zoneSelect" name="zone" onchange="document.getElementById('zoneForm').submit();">
+                            {% for zone in zones %}
+                                <option value="{{ zone }}" {% if zone == selected_zone %}selected{% endif %}>{{ zone }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+            {% endif %}
+            
+            <h2 class="section-title"><i class="fas fa-users"></i> Officer Performance Analysis</h2>
+            
+            {% if officers_data %}
+                <div style="overflow-x: auto;">
+                    <table class="officers-table">
+                        <thead>
+                            <tr>
+                                <th style="width: {% if selected_zone == "All Zones" %}15{% else %}20{% endif %}%;"><i class="fas fa-user"></i> Officer Name</th>
+                                {% if selected_zone == "All Zones" %}
+                                <th style="width: 15%;"><i class="fas fa-map-marker-alt"></i> Zone</th>
+                                {% endif %}
+                                <th style="width: {% if selected_zone == "All Zones" %}12{% else %}15{% endif %}%;"><i class="fas fa-tasks"></i> Total</th>
+                                <th style="width: {% if selected_zone == "All Zones" %}12{% else %}15{% endif %}%;"><i class="fas fa-check-circle"></i> Resolved</th>
+                                <th style="width: {% if selected_zone == "All Zones" %}12{% else %}15{% endif %}%;"><i class="fas fa-hourglass-half"></i> Pending</th>
+                                <th style="width: {% if selected_zone == "All Zones" %}12{% else %}15{% endif %}%;"><i class="fas fa-spinner"></i> In Progress</th>
+                                <th style="width: {% if selected_zone == "All Zones" %}22{% else %}20{% endif %}%;"><i class="fas fa-percentage"></i> Resolution Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for officer_info in officers_data %}
+                                <tr>
+                                    <td>
+                                        <div class="officer-name">
+                                            {{ officer_info.officer.get_full_name|default:officer_info.officer.username }}
+                                        </div>
+                                        <div class="officer-detail">{{ officer_info.officer.employee_id|default:"N/A" }}</div>
+                                    </td>
+                                    {% if selected_zone == "All Zones" %}
+                                    <td>
+                                        <span class="stat-number" style="color: #007bff;">
+                                            {{ officer_info.zone|default:"N/A" }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        <span class="stat-number">{{ officer_info.complaints_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="stat-number" style="color: #28a745;">
+                                            {{ officer_info.resolved_count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="stat-number" style="color: #ffc107;">
+                                            {{ officer_info.pending_count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="stat-number" style="color: #17a2b8;">
+                                            {{ officer_info.in_progress_count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="stat-bar">
+                                            <div class="bar-container">
+                                                <div class="bar-fill" style="width: {% if officer_info.complaints_count > 0 %}{{ officer_info.resolution_rate }}{% else %}0{% endif %}%;">
+                                                </div>
+                                            </div>
+                                            <span class="stat-number">{{ officer_info.resolution_rate }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% if officer_info.avg_resolution_time %}
+                                    <tr style="background: #f8f9fa; font-size: 0.9rem; color: #6c757d;">
+                                        <td colspan="{% if selected_zone == 'All Zones' %}7{% else %}6{% endif %}">
+                                            <strong>Avg Resolution Time:</strong> 
+                                            <span class="resolution-time">
+                                                {{ officer_info.avg_resolution_time|stringformat:"s" }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Performance Legend -->
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                    <h5 style="margin-bottom: 15px;"><i class="fas fa-info-circle"></i> Performance Indicators</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div>
+                            <span class="performance-badge performance-excellent">90-100%</span>
+                            <p style="font-size: 0.85rem; margin-top: 5px; color: #6c757d;">Excellent</p>
+                        </div>
+                        <div>
+                            <span class="performance-badge performance-good">70-89%</span>
+                            <p style="font-size: 0.85rem; margin-top: 5px; color: #6c757d;">Good</p>
+                        </div>
+                        <div>
+                            <span class="performance-badge performance-average">50-69%</span>
+                            <p style="font-size: 0.85rem; margin-top: 5px; color: #6c757d;">Average</p>
+                        </div>
+                        <div>
+                            <span class="performance-badge performance-poor">Below 50%</span>
+                            <p style="font-size: 0.85rem; margin-top: 5px; color: #6c757d;">Needs Improvement</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="fas fa-inbox"></i>
+                    <p><strong>No officers found for this zone</strong></p>
+                    <p>Please select a different zone or check officer assignments.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="report-footer">
+            <p>Report Generated on: <strong>{{ "now"|date:"d M Y, H:i" }}</strong></p>
+            <p>&copy; 2024 Civic Zone Solution. All Rights Reserved.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-format numbers
+        document.querySelectorAll('.stat-number').forEach(el => {
+            const num = parseInt(el.textContent);
+            if (!isNaN(num) && el.textContent === num.toString()) {
+                el.textContent = num.toLocaleString();
+            }
+        });
+    </script>
+</body>
+</html>

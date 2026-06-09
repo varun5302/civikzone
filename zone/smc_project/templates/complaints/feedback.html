@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Feedback - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <nav class="navbar navbar-dark" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 1rem 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-comments me-2"></i>
+                Feedback Form
+            </span>
+            <a href="{% url 'dashboard' %}" class="btn btn-sm navbar-back-btn">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="feedback-container">
+            <h1><i class="fas fa-comments"></i> Send Us Your Feedback</h1>
+            <p>We value your feedback and suggestions to improve our services</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="alert alert-{{ message.tags }} show">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            <div class="feedback-info">
+                <i class="fas fa-info-circle"></i>
+                Your feedback helps us enhance the complaint management system and provide better service to the citizens.
+            </div>
+            
+            <form method="POST" id="feedbackForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="fullname"><strong>Full Name:</strong></label>
+                    <input type="text" id="fullname" name="fullname" value="{{ user.get_full_name|default:user.username }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email"><strong>Email Address:</strong></label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mobile"><strong>Mobile Number:</strong></label>
+                    <input type="tel" id="mobile" name="mobile" value="{{ user.phone|default:'Not provided' }}" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reference_email"><strong>Reference Mail ID (if any):</strong></label>
+                    <input type="email" id="reference_email" name="reference_email" placeholder="Reference mail ID for your complaint">
+                </div>
+                
+                <div class="form-group">
+                    <label><strong>Overall Satisfaction Rating:</strong></label>
+                    <div class="star-rating" id="starRating">
+                        <input type="hidden" id="ratingValue" name="overall_rating" value="0" required>
+                        <i class="fas fa-star" data-value="1" onclick="setRating(1)" title="Very Poor"></i>
+                        <i class="fas fa-star" data-value="2" onclick="setRating(2)" title="Poor"></i>
+                        <i class="fas fa-star" data-value="3" onclick="setRating(3)" title="Average"></i>
+                        <i class="fas fa-star" data-value="4" onclick="setRating(4)" title="Good"></i>
+                        <i class="fas fa-star" data-value="5" onclick="setRating(5)" title="Excellent"></i>
+                    </div>
+                    <div id="ratingText" style="margin-top: 10px; color: #667eea; font-weight: 500;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="response_time"><strong>Response Time Satisfaction:</strong></label>
+                    <select id="response_time" name="response_time_satisfaction" required>
+                        <option value="">-- Select --</option>
+                        <option value="very_poor">Very Poor</option>
+                        <option value="poor">Poor</option>
+                        <option value="average">Average</option>
+                        <option value="good">Good</option>
+                        <option value="excellent">Excellent</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback"><strong>Your Feedback:</strong></label>
+                    <textarea 
+                        id="feedback" 
+                        name="feedback" 
+                        placeholder="Please share your feedback, suggestions, or concerns..." 
+                        required
+                        onkeyup="updateCharCount(this)"></textarea>
+                    <div class="character-count">
+                        <span id="charCount">0</span> / 1000 characters
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                    <button type="button" class="btn-cancel" onclick="resetForm()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <!-- Custom Success Modal -->
+    <div id="successModal" class="success-modal">
+        <div class="success-modal-content">
+            <div class="success-modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Thank You!</h3>
+            </div>
+            <div class="success-modal-body">
+                <p>Thank you for your feedback! We appreciate your input.</p>
+            </div>
+            <div class="success-modal-footer">
+                <button onclick="redirectToDashboard()" class="btn-success-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ratingTexts = {
+            1: '⭐ Very Poor',
+            2: '⭐⭐ Poor',
+            3: '⭐⭐⭐ Average',
+            4: '⭐⭐⭐⭐ Good',
+            5: '⭐⭐⭐⭐⭐ Excellent'
+        };
+        
+        function setRating(value) {
+            document.getElementById('ratingValue').value = value;
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach((star, index) => {
+                if (index < value) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            document.getElementById('ratingText').innerText = ratingTexts[value];
+        }
+        
+        function updateCharCount(textarea) {
+            const maxLength = 1000;
+            const currentLength = textarea.value.length;
+            document.getElementById('charCount').textContent = Math.min(currentLength, maxLength);
+            
+            if (currentLength > maxLength) {
+                textarea.value = textarea.value.substring(0, maxLength);
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('feedbackForm').reset();
+            document.getElementById('ratingValue').value = '0';
+            document.getElementById('ratingText').innerText = '';
+            document.getElementById('charCount').textContent = '0';
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach(star => star.classList.remove('active'));
+        }
+        
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            const feedback = document.getElementById('feedback').value.trim();
+            const rating = document.getElementById('ratingValue').value;
+            const responseTime = document.getElementById('response_time').value;
+            
+            if (feedback.length === 0) {
+                e.preventDefault();
+                alert('Please enter your feedback before submitting.');
+                return;
+            }
+            
+            if (rating === '0') {
+                e.preventDefault();
+                alert('Please select a star rating before submitting.');
+                return;
+            }
+            
+            if (!responseTime) {
+                e.preventDefault();
+                alert('Please select Response Time Satisfaction before submitting.');
+                return;
+            }
+        });
+        
+        // Success Modal Functions
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'block';
+        }
+        
+        function redirectToDashboard() {
+            window.location.href = "{% url 'dashboard' %}";
+        }
+        
+        // Check for success message and show modal
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    showSuccessModal();
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        // Initialize star rating with hover effect
+        document.querySelectorAll('.star-rating i').forEach(star => {
+            star.addEventListener('mouseover', function() {
+                const value = this.dataset.value;
+                const stars = document.querySelectorAll('.star-rating i');
+                stars.forEach((s, index) => {
+                    if (index < value) {
+                        s.style.color = '#ffc107';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+        
+        document.getElementById('starRating').addEventListener('mouseleave', function() {
+            const value = document.getElementById('ratingValue').value;
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach((star, index) => {
+                if (index < value) {
+                    star.style.color = '#ffc107';
+                } else {
+                    star.style.color = '#ddd';
+                }
+            });
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

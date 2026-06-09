@@ -1,0 +1,800 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Complaint - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'css/submit_complaint.css' %}">
+</head>
+<body>
+    <!-- Dashboard Style Header -->
+    <header class="submit-header">
+        <div class="header-left">
+            <a href="{% url 'dashboard' %}" class="logo-container">
+                <i class="fas fa-edit"></i>
+                <div class="logo-text">
+                    <span>Edit Complaint</span>
+                </div>
+            </a>
+        </div>
+        <div class="header-right">
+            <span class="user-welcome">
+                <i class="fas fa-user-circle"></i>
+                Welcome, {{ user.get_full_name|default:user.username }}!
+            </span>
+            <div class="header-links">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-5">
+        <div class="card mx-auto complaint-card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Update Your Complaint
+                </h4>
+                <p class="mb-0 text-muted small">Modify the details below to update your complaint</p>
+            </div>
+            <div class="card-body">
+                <!-- Display messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" id="complaintForm">
+                    {% csrf_token %}
+
+                    <!-- Category -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-tag text-primary"></i>
+                            Category:
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">{{ form.category.errors }}</div>
+                        {% endif %}
+                        <div id="otherCategoryDiv" class="mt-2" style="display: none;">
+                            {{ form.other_category }}
+                            {% if form.other_category.errors %}
+                                <div class="text-danger">{{ form.other_category.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Subcategory -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-tags text-primary"></i>
+                            Subcategory:
+                        </label>
+                        {{ form.subcategory }}
+                        {% if form.subcategory.errors %}
+                            <div class="text-danger">{{ form.subcategory.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Zone -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-map text-primary"></i>
+                            Zone:
+                        </label>
+                        {{ form.zone }}
+                        {% if form.zone.errors %}
+                            <div class="text-danger">{{ form.zone.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            Location:
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Click on the map or drag the marker to select your location
+                        </small>
+                        <div id="map"></div>
+                        <div class="map-toolbar">
+                            <div class="map-search-group">
+                                <input type="text" id="mapSearchInput" class="form-control" placeholder="Search area, road, landmark...">
+                                <button type="button" class="btn btn-outline-primary map-action-btn" id="mapSearchBtn" onclick="searchLocationOnMap()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="map-meta mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary map-action-btn" id="locateMeBtn" onclick="locateMe()">
+                                    <i class="fas fa-location-crosshairs me-1"></i>Use My Location
+                                </button>
+                            </div>
+                        </div>
+                        {{ form.location }}
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+                        {% if form.location.errors %}
+                            <div class="text-danger">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-address-card text-primary"></i>
+                            Full Address:
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Provide your complete address details (optional)
+                        </small>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="text-danger">{{ form.address.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-phone text-primary"></i>
+                            Phone Number:
+                        </label>
+                        {{ form.phone }}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Enter 10-digit mobile number
+                        </small>
+                        {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-align-left text-primary"></i>
+                            Description:
+                        </label>
+                        {{ form.description }}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Provide detailed description of your complaint
+                        </small>
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <!-- Image Upload -->
+                    <div class="mb-4 complaint-field">
+                        <label class="form-label">
+                            <i class="fas fa-camera text-primary"></i>
+                            Update Image:
+                        </label>
+
+                        <!-- Current Image Display -->
+                        {% if complaint.proof_image %}
+                            <div class="image-preview-box text-center mb-3">
+                                <img src="{{ complaint.proof_image.url }}" alt="Current Image" class="current-image">
+                                <br>
+                                <a href="{{ complaint.proof_image.url }}" target="_blank" class="btn btn-sm btn-info mt-2">
+                                    <i class="fas fa-external-link-alt"></i> View Full Image
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="image-preview-box text-center mb-3">
+                                <i class="fas fa-image" style="font-size: 3rem; color: #ccc;"></i>
+                                <p class="text-muted mt-2">No image uploaded</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- Camera Upload Container -->
+                        <div class="camera-upload-container text-center mb-3">
+                            <button type="button" class="btn btn-outline-primary camera-btn" id="cameraBtn">
+                                <i class="fas fa-camera fa-2x mb-2"></i>
+                                <br>
+                                <span class="camera-btn-text">Take Photo</span>
+                            </button>
+                            <p class="text-muted small mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Click to open camera and capture new image
+                            </p>
+                        </div>
+
+                        <!-- Hidden File Input -->
+                        {{ form.proof_image }}
+
+                        <!-- Image Preview -->
+                        <div class="image-preview-container text-center" id="imagePreview" style="display: none;">
+                            <div class="image-preview-box">
+                                <img id="previewImg" src="" alt="Captured image" class="img-fluid rounded">
+                                <div class="image-preview-overlay">
+                                    <button type="button" class="btn btn-sm btn-danger" id="removeImageBtn">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-success mt-2 d-block" id="imageStatus">
+                                <i class="fas fa-check-circle me-1"></i>Image captured successfully
+                            </small>
+                        </div>
+
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Leave empty to keep current image. Supported formats: JPG, JPEG, PNG (Max 5MB).
+                        </small>
+                        {% if form.proof_image.errors %}
+                            <div class="text-danger">{{ form.proof_image.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 submit-btn" id="submitBtn">
+                        <i class="fas fa-save me-2"></i>
+                        <span class="btn-text">Update Complaint</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <p class="text-white fw-bold fs-5">Updating your complaint...</p>
+        </div>
+    </div>
+
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map, marker;
+        let subcategoriesByCategory = {{ subcategories_by_category|safe }};
+        let addressGeocodeTimer = null;
+
+        function updateLocationInput(pos) {
+            const latInput = document.getElementById('id_latitude');
+            const lngInput = document.getElementById('id_longitude');
+            const locationInput = document.getElementById('id_location');
+
+            if (latInput) {
+                latInput.value = pos.lat;
+            }
+            if (lngInput) {
+                lngInput.value = pos.lng;
+            }
+
+            // Reverse geocode to get address in English
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&accept-language=en`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name && locationInput) {
+                        locationInput.value = data.display_name;
+                    }
+                })
+                .catch(() => {
+                    // Keep existing location if geocoding fails
+                });
+        }
+
+        function initMap() {
+            const latValue = parseFloat('{{ form.latitude.value|default:complaint.latitude|default:"21.1702" }}');
+            const lngValue = parseFloat('{{ form.longitude.value|default:complaint.longitude|default:"72.8311" }}');
+
+            const initialPos = {
+                lat: Number.isFinite(latValue) ? latValue : 21.1702,
+                lng: Number.isFinite(lngValue) ? lngValue : 72.8311
+            };
+
+            map = L.map('map', {
+                zoomControl: true,
+                minZoom: 11,
+                maxZoom: 19
+            }).setView([initialPos.lat, initialPos.lng], 15);
+
+            const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            });
+
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
+            });
+
+            streetLayer.addTo(map);
+
+            L.control.layers(
+                {
+                    'Street View': streetLayer,
+                    'Satellite View': satelliteLayer
+                },
+                null,
+                { position: 'topright', collapsed: true }
+            ).addTo(map);
+
+            L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+            marker = L.marker([initialPos.lat, initialPos.lng], { draggable: true }).addTo(map);
+            updateLocationInput(initialPos);
+
+            map.on('click', (e) => {
+                marker.setLatLng(e.latlng);
+                updateLocationInput(e.latlng);
+            });
+
+            marker.on('dragend', () => {
+                const pos = marker.getLatLng();
+                updateLocationInput(pos);
+            });
+        }
+
+        function searchLocationOnMap() {
+            const searchInput = document.getElementById('mapSearchInput');
+            if (!searchInput || !searchInput.value.trim()) {
+                return;
+            }
+
+            const query = encodeURIComponent(searchInput.value.trim());
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&accept-language=en`)
+                .then(response => response.json())
+                .then(results => {
+                    if (!Array.isArray(results) || results.length === 0) {
+                        alert('No location found. Please try another landmark or area name.');
+                        return;
+                    }
+
+                    const result = results[0];
+                    const pos = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+                    map.setView([pos.lat, pos.lng], 17);
+                    marker.setLatLng([pos.lat, pos.lng]);
+                    updateLocationInput(pos);
+                })
+                .catch(() => {
+                    alert('Location search failed. Please try again.');
+                });
+        }
+
+        function locateMe() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setView([pos.lat, pos.lng], 17);
+                    marker.setLatLng([pos.lat, pos.lng]);
+                    updateLocationInput(pos);
+                },
+                () => {
+                    alert('Unable to fetch your current location. Please allow location permission.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        function geocodeAddressToMap(showFailureAlert = false) {
+            const addressInput = document.getElementById('id_address');
+            if (!addressInput) {
+                return Promise.resolve(true);
+            }
+
+            const addressText = (addressInput.value || '').trim();
+            if (!addressText) {
+                return Promise.resolve(true);
+            }
+
+            const query = encodeURIComponent(`${addressText}, Surat, Gujarat, India`);
+            return fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${query}&addressdetails=1&limit=1&accept-language=en`)
+                .then((response) => response.json())
+                .then((results) => {
+                    if (!Array.isArray(results) || results.length === 0) {
+                        if (showFailureAlert) {
+                            alert('Please enter a valid Surat address.');
+                        }
+                        return false;
+                    }
+
+                    const result = results[0];
+                    const pos = {
+                        lat: parseFloat(result.lat),
+                        lng: parseFloat(result.lon),
+                    };
+
+                    if (map && marker && !Number.isNaN(pos.lat) && !Number.isNaN(pos.lng)) {
+                        map.setView([pos.lat, pos.lng], 17);
+                        marker.setLatLng([pos.lat, pos.lng]);
+                        updateLocationInput(pos);
+                    }
+
+                    return true;
+                })
+                .catch(() => {
+                    if (showFailureAlert) {
+                        alert('Address lookup failed. Please try again.');
+                    }
+                    return false;
+                });
+        }
+
+        function handleCategoryChange() {
+            const categorySelect = document.getElementById('id_category');
+            const subcategorySelect = document.getElementById('id_subcategory');
+            const otherCategoryDiv = document.getElementById('otherCategoryDiv');
+            const otherCategoryInput = document.getElementById('id_other_category');
+
+            // Reset subcategory if category changed
+            if (categorySelect.value !== '{{ form.initial.category|default:"" }}') {
+                subcategorySelect.value = '';
+            }
+
+            // Show/hide other category input
+            if (categorySelect.value === 'Other') {
+                otherCategoryDiv.style.display = 'block';
+                if (otherCategoryInput) otherCategoryInput.required = true;
+            } else {
+                otherCategoryDiv.style.display = 'none';
+                if (otherCategoryInput) otherCategoryInput.required = false;
+            }
+
+            // Clear all subcategory options except first
+            while (subcategorySelect.options.length > 0) {
+                subcategorySelect.remove(0);
+            }
+
+            // Add default option
+            const defaultOption = new Option('Select Subcategory', '');
+            subcategorySelect.add(defaultOption);
+
+            // Add subcategories based on selected category
+            const selectedCategory = categorySelect.value;
+            if (selectedCategory && selectedCategory !== 'Other') {
+                const subcategories = subcategoriesByCategory[selectedCategory] || [];
+                subcategories.forEach(sub => {
+                    const option = new Option(sub, sub);
+                    subcategorySelect.add(option);
+                });
+            }
+
+            // Add "Other" option
+            const otherOption = new Option('Other', 'Other');
+            subcategorySelect.add(otherOption);
+
+            // Restore previous subcategory value if it exists for this category
+            const previousSubcategory = '{{ form.initial.subcategory|default:"" }}';
+            if (previousSubcategory) {
+                // Check if previous subcategory is in the current category's subcategories
+                if (selectedCategory && selectedCategory !== 'Other') {
+                    const subcategories = subcategoriesByCategory[selectedCategory] || [];
+                    if (subcategories.includes(previousSubcategory)) {
+                        subcategorySelect.value = previousSubcategory;
+                    }
+                }
+            }
+        }
+
+        function validatePhoneNumber(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            return cleaned.length === 10;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+
+            const mapSearchInput = document.getElementById('mapSearchInput');
+            if (mapSearchInput) {
+                mapSearchInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        searchLocationOnMap();
+                    }
+                });
+            }
+
+            // Set up category change handler
+            const categorySelect = document.getElementById('id_category');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', handleCategoryChange);
+                // Initial call to set up subcategories
+                handleCategoryChange();
+
+                // Set the initial subcategory value after categories are loaded
+                setTimeout(() => {
+                    const initialSubcategory = '{{ form.initial.subcategory|default:"" }}';
+                    if (initialSubcategory) {
+                        const subcategorySelect = document.getElementById('id_subcategory');
+                        if (subcategorySelect) {
+                            // Try to find and select the option
+                            for (let i = 0; i < subcategorySelect.options.length; i++) {
+                                if (subcategorySelect.options[i].value === initialSubcategory) {
+                                    subcategorySelect.value = initialSubcategory;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+            }
+
+            // Phone number validation
+            const phoneInput = document.getElementById('id_phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+
+                    if (validatePhoneNumber(this.value)) {
+                        this.classList.remove('is-invalid');
+                    } else {
+                        this.classList.add('is-invalid');
+                    }
+                });
+            }
+
+            const addressInput = document.getElementById('id_address');
+            if (addressInput) {
+                addressInput.addEventListener('input', function() {
+                    window.clearTimeout(addressGeocodeTimer);
+                    addressGeocodeTimer = window.setTimeout(() => {
+                        geocodeAddressToMap(false);
+                    }, 800);
+                });
+
+                addressInput.addEventListener('blur', function() {
+                    window.clearTimeout(addressGeocodeTimer);
+                    geocodeAddressToMap(false);
+                });
+
+                addressInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        window.clearTimeout(addressGeocodeTimer);
+                        geocodeAddressToMap(true);
+                    }
+                });
+            }
+
+            // Form validation
+            const form = document.getElementById('complaintForm');
+            if (form) {
+                // Track image changes
+                const imageInput = document.getElementById('id_proof_image');
+                const newImagePreview = document.getElementById('newImagePreview');
+                let imageChanged = false;
+                
+                if (imageInput) {
+                    imageInput.addEventListener('change', function() {
+                        if (this.files && this.files.length > 0) {
+                            imageChanged = true;
+                            if (newImagePreview) {
+                                newImagePreview.style.display = 'block';
+                            }
+                        } else {
+                            imageChanged = false;
+                            if (newImagePreview) {
+                                newImagePreview.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+                
+                form.addEventListener('submit', function(event) {
+                    // Validate phone number
+                    const phone = document.getElementById('id_phone').value;
+                    if (!validatePhoneNumber(phone)) {
+                        event.preventDefault();
+                        alert('Please enter a valid 10-digit phone number');
+                        return false;
+                    }
+
+                    // Validate location
+                    const lat = document.getElementById('id_latitude').value;
+                    const lng = document.getElementById('id_longitude').value;
+                    if (!lat || !lng) {
+                        event.preventDefault();
+                        alert('Please select a location on the map');
+                        return false;
+                    }
+                    
+                    // Show loading message if image is being updated
+                    if (imageChanged) {
+                        alert('✅ Updating complaint with new image. Please wait...');
+                    }
+
+                    return true;
+                });
+            }
+
+            // Show/hide other fields based on initial values
+            const initialCategory = '{{ form.initial.category|default:"" }}';
+            if (initialCategory === 'Other') {
+                document.getElementById('otherCategoryDiv').style.display = 'block';
+            }
+        });
+
+        // Camera Upload Functionality
+        function initCameraUpload() {
+            const cameraBtn = document.getElementById('cameraBtn');
+            const fileInput = document.getElementById('id_proof_image_hidden');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeBtn = document.getElementById('removeImageBtn');
+            const imageStatus = document.getElementById('imageStatus');
+            const cameraContainer = document.querySelector('.camera-upload-container');
+
+            // Camera button click handler
+            cameraBtn.addEventListener('click', async function() {
+                try {
+                    // Check if camera is supported
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        alert('Camera not supported on this device. Please use file upload instead.');
+                        fileInput.click();
+                        return;
+                    }
+
+                    // Request camera access
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'environment' // Use back camera on mobile
+                        }
+                    });
+
+                    // Create video element for camera preview
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    video.playsInline = true; // Important for mobile
+
+                    // Create capture button
+                    const captureBtn = document.createElement('button');
+                    captureBtn.textContent = 'Capture Photo';
+                    captureBtn.className = 'btn btn-success mt-2';
+
+                    // Create cancel button
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'btn btn-secondary mt-2 ms-2';
+
+                    // Create modal for camera
+                    const cameraModal = document.createElement('div');
+                    cameraModal.className = 'modal fade show';
+                    cameraModal.style.display = 'block';
+                    cameraModal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    cameraModal.innerHTML = `
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Take Photo</h5>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <video id="cameraVideo" autoplay playsinline style="width: 100%; max-height: 400px;"></video>
+                                    <div class="mt-3">
+                                        <button id="captureBtn" class="btn btn-success">Capture Photo</button>
+                                        <button id="cancelBtn" class="btn btn-secondary ms-2">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.body.appendChild(cameraModal);
+
+                    // Get modal elements
+                    const modalVideo = cameraModal.querySelector('#cameraVideo');
+                    const modalCaptureBtn = cameraModal.querySelector('#captureBtn');
+                    const modalCancelBtn = cameraModal.querySelector('#cancelBtn');
+
+                    // Set video stream
+                    modalVideo.srcObject = stream;
+
+                    // Capture photo
+                    modalCaptureBtn.addEventListener('click', function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = modalVideo.videoWidth;
+                        canvas.height = modalVideo.videoHeight;
+                        ctx.drawImage(modalVideo, 0, 0);
+
+                        // Convert to blob
+                        canvas.toBlob(function(blob) {
+                            const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+
+                            // Validate file size
+                            const maxSize = 5 * 1024 * 1024; // 5MB
+                            if (file.size > maxSize) {
+                                alert('Captured image is too large. Please try again.');
+                                return;
+                            }
+
+                            // Create file list for input
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            fileInput.files = dt.files;
+
+                            // Show preview
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                previewImg.src = e.target.result;
+                                imagePreview.style.display = 'block';
+                                cameraContainer.style.display = 'none';
+                                imageStatus.textContent = `Image captured: camera_capture.jpg (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                                previewImg.classList.add('image-captured');
+                            };
+                            reader.readAsDataURL(file);
+
+                            // Close modal and stop stream
+                            document.body.removeChild(cameraModal);
+                            stream.getTracks().forEach(track => track.stop());
+                        }, 'image/jpeg', 0.8);
+                    });
+
+                    // Cancel camera
+                    modalCancelBtn.addEventListener('click', function() {
+                        document.body.removeChild(cameraModal);
+                        stream.getTracks().forEach(track => track.stop());
+                    });
+
+                } catch (error) {
+                    console.error('Camera access error:', error);
+                    alert('Unable to access camera. Please use file upload instead.');
+                    fileInput.click();
+                }
+            });
+
+            // Remove image handler
+            removeBtn.addEventListener('click', function() {
+                resetFileInput();
+            });
+
+            function resetFileInput() {
+                fileInput.value = '';
+                imagePreview.style.display = 'none';
+                cameraContainer.style.display = 'block';
+                previewImg.classList.remove('image-captured');
+                imageStatus.textContent = '';
+            }
+        }
+
+        // Initialize camera upload functionality when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCameraUpload();
+        });
+    </script>
+</body>
+</html>

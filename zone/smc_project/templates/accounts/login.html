@@ -1,0 +1,401 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Civic Zone Solution</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --accent-1: #0f766e;
+            --accent-2: #0e7490;
+            --ink-strong: #0f172a;
+            --ink-soft: #475569;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .login-bg {
+            background: #ffffff;
+        }
+        .auth-card {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 26px 52px rgba(15, 23, 42, 0.14);
+        }
+        .visual-bg {
+            background: linear-gradient(145deg, #0f766e 0%, #0891b2 100%);
+            position: relative;
+            border-radius: 1.2rem;
+            border: 2px solid rgba(0, 0, 0, 0.35);
+        }
+        .visual-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1.2rem;
+            background: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.08), transparent 50%);
+            pointer-events: none;
+            z-index: 3;
+        }
+        .form-field-card {
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95));
+            border: 1px solid #e2e8f0;
+            border-radius: 0.9rem;
+            padding: 0.5rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .form-field-card:focus-within {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.14);
+            transform: translateY(-1px);
+        }
+        .form-floating > label {
+            padding: 0.85rem 0.7rem;
+            color: var(--ink-soft);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .form-floating > .form-control {
+            border: 1px solid #d7e3ef;
+            border-radius: 0.7rem;
+            background: #ffffff;
+            color: #0f172a;
+            padding: 0.7rem 0.78rem;
+            box-shadow: none;
+        }
+        .form-control:focus {
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 0.2rem rgba(20, 184, 166, 0.13);
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(14, 116, 144, 0.32);
+        }
+        .subtle-link {
+            color: var(--accent-1);
+        }
+        .subtle-link:hover {
+            color: #155e75;
+        }
+        .secondary-cta {
+            background: #f8fafc;
+            border: 1px solid #dbe3ee;
+        }
+        .secondary-cta:hover {
+            background: #f1f5f9;
+        }
+        .carousel-item {
+            transition: transform 0.6s ease-in-out;
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-group-text {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border: 1px solid #d1d5db;
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .password-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 0.6rem;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #475569;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow: none;
+            outline: none;
+        }
+        .password-toggle-btn:hover,
+        .password-toggle-btn:focus,
+        .password-toggle-btn:active {
+            transform: translateY(-50%);
+            color: #0f172a;
+            box-shadow: none;
+            outline: none;
+        }
+        .password-mask {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+        .password-wrapper {
+            position: relative;
+        }
+        .password-floating {
+            position: relative;
+        }
+        .password-floating .password-input {
+            padding-right: 3rem;
+        }
+        .password-wrapper .password-input {
+            padding-left: 2.4rem;
+            padding-right: 3rem;
+        }
+        .password-prefix-icon {
+            position: absolute;
+            top: 50%;
+            left: 0.9rem;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            z-index: 2;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="login-bg min-h-screen flex items-center justify-center p-4">
+    <div class="container auth-card bg-white rounded-2xl max-w-5xl w-full overflow-hidden fade-in">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Image Side -->
+            <div class="lg:w-1/2 visual-bg p-0 relative overflow-hidden">
+                <!-- Bootstrap Carousel -->
+                <div id="loginCarousel" class="carousel slide h-full" data-bs-ride="carousel" data-bs-interval="2000">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="0" class="active bg-white opacity-75" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="1" class="bg-white opacity-75" aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="2" class="bg-white opacity-75" aria-label="Slide 3"></button>
+                        <button type="button" data-bs-target="#loginCarousel" data-bs-slide-to="3" class="bg-white opacity-75" aria-label="Slide 4"></button>
+                    </div>
+                    <div class="carousel-inner h-full">
+                        <div class="carousel-item active h-full">
+                            <div class="h-full bg-gradient-to-br from-teal-600 to-cyan-700 flex items-center justify-center p-8 relative">
+                                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                                <div class="text-center text-white relative z-10">
+                                    <div class="mb-6">
+                                        <i class="fas fa-shield-alt text-6xl mb-4 text-white drop-shadow-lg"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold mb-4 drop-shadow-lg">Secure Login</h3>
+                                    <p class="text-cyan-100 text-lg leading-relaxed">Access your account securely with our advanced protection systems.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-full">
+                            <div class="h-full bg-gradient-to-br from-cyan-600 to-sky-700 flex items-center justify-center p-8 relative">
+                                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                                <div class="text-center text-white relative z-10">
+                                    <div class="mb-6">
+                                        <i class="fas fa-users-cog text-6xl mb-4 text-white drop-shadow-lg"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold mb-4 drop-shadow-lg">Role-Based Access</h3>
+                                    <p class="text-sky-100 text-lg leading-relaxed">Citizen, Officer, or Admin - access your personalized dashboard.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-full">
+                            <div class="h-full bg-gradient-to-br from-sky-600 to-blue-700 flex items-center justify-center p-8 relative">
+                                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                                <div class="text-center text-white relative z-10">
+                                    <div class="mb-6">
+                                        <i class="fas fa-check-circle text-6xl mb-4 text-white drop-shadow-lg"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold mb-4 drop-shadow-lg">Verified & Trusted</h3>
+                                    <p class="text-blue-100 text-lg leading-relaxed">Your data is protected with enterprise-grade security standards.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item h-full">
+                            <div class="h-full bg-gradient-to-br from-emerald-500 via-teal-600 to-sky-700 flex items-center justify-center p-8 relative">
+                                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                                <div class="text-center text-white relative z-10">
+                                    <div class="mb-6">
+                                        <i class="fas fa-city text-6xl mb-4 text-white drop-shadow-lg"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold mb-4 drop-shadow-lg">Let's Make Smart City</h3>
+                                    <p class="text-emerald-100 text-lg leading-relaxed">Build a smarter, connected, and more efficient civic experience together.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#loginCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#loginCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Side -->
+            <div class="lg:w-1/2 p-8 lg:p-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2" style="color: var(--ink-strong);">Welcome Back</h2>
+                    <p class="mt-2" style="color: var(--ink-soft);">Sign in to your Civic Zone account</p>
+                </div>
+
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show rounded-lg shadow-sm" role="alert">
+                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post" class="space-y-6" id="loginForm" autocomplete="off">
+                    {% csrf_token %}
+
+                    <div class="form-floating form-field-card mb-3">
+                        <input type="text" class="form-control rounded-lg border-0 shadow-sm" id="username" name="username" placeholder="Username" autocomplete="username" required>
+                        <label for="username" class="text-gray-600">
+                            <i class="fas fa-user me-2"></i>Username
+                        </label>
+                    </div>
+
+                    <div class="form-floating form-field-card mb-3 password-floating">
+                        <input type="text" class="form-control rounded-lg border-0 shadow-sm password-mask password-input" id="password" name="password" placeholder="Password" autocomplete="off" required>
+                        <label for="password" class="text-gray-600">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <button class="btn password-toggle-btn" type="button" id="toggleUserPassword" aria-label="Show password">
+                            <i class="fas fa-eye" id="toggleUserPasswordIcon"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                            <label class="form-check-label text-gray-600" for="remember">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="{% url 'forgot_password' %}" class="subtle-link text-sm font-medium transition-colors">
+                            <i class="fas fa-key me-1"></i>Forgot password?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary-custom text-white py-3 px-4 rounded-lg font-semibold text-lg shadow-lg" id="loginBtn">
+                        <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <!-- Social Login Divider -->
+                <div class="flex items-center my-6">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="px-4 text-gray-500 text-sm">OR</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <!-- Google Login Button -->
+                {% if google_oauth_enabled %}
+                    <a href="{% url 'google_login_start' %}" class="w-full inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 rounded-lg font-medium transition-all duration-300 shadow-sm hover:shadow-md border border-gray-300 no-underline hover:no-underline focus:no-underline active:no-underline">
+                        <svg class="w-5 h-5 me-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </a>
+                {% else %}
+                    <button type="button" class="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-400 rounded-lg font-medium border border-gray-300 cursor-not-allowed" disabled title="Google Sign-In is not configured">
+                        <svg class="w-5 h-5 me-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                {% endif %}
+
+                <div class="text-center mt-6">
+                    <a href="{% url 'register' %}" class="secondary-cta inline-flex items-center px-6 py-3 text-gray-800 rounded-lg font-medium transition-all duration-300 shadow-sm hover:shadow-md no-underline hover:no-underline focus:no-underline active:no-underline" style="text-decoration: none;">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+
+                <div class="text-center mt-8 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Your connection is secure and encrypted
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Form submission with loading state
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            const spinner = btn.querySelector('.spinner-border');
+            const icon = btn.querySelector('i');
+
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+            icon.classList.add('d-none');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing In...';
+        });
+
+        // Password visibility toggle (optional enhancement)
+        document.getElementById('password').addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+
+        document.getElementById('password').addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.getElementById('toggleUserPassword');
+            const toggleIcon = document.getElementById('toggleUserPasswordIcon');
+
+            toggleBtn.addEventListener('click', function() {
+                const isMasked = passwordInput.classList.contains('password-mask');
+                passwordInput.classList.toggle('password-mask', !isMasked);
+                toggleIcon.classList.toggle('fa-eye', isMasked);
+                toggleIcon.classList.toggle('fa-eye-slash', !isMasked);
+                toggleBtn.setAttribute('aria-label', isMasked ? 'Hide password' : 'Show password');
+            });
+
+            // Auto-focus first input
+            document.getElementById('username').focus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>My Profile - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+        --primary-color: #0a6179;
+        --secondary-color: #2962ff;
+        --accent-color: #00b8d4;
+        --success-color: #00c853;
+        --warning-color: #ff9100;
+        --danger-color: #ff1744;
+        --light-bg: #f5f7ff;
+        --card-bg: #ffffff;
+        --text-primary: #1a237e;
+        --text-secondary: #546e7a;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7ff 0%, #e3e9ff 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-primary);
+    }
+
+    .profile-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #283593 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 20px 20px 0 0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2);
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.08)" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+        background-size: cover;
+        opacity: 0.6;
+    }
+
+    .profile-picture-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 1.5rem;
+        z-index: 2;
+    }
+
+   .profile-picture {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    /* इस लाइन को हटा दें या comment कर दें */
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+}
+    .profile-picture:hover {
+        transform: scale(1.02);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .profile-picture-settings {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: var(--accent-color);
+        color: #ffffff;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 3px solid white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 184, 212, 0.4);
+        z-index: 3;
+        list-style: none;
+    }
+
+    .profile-picture-settings:hover {
+        background: #0097a7;
+        transform: scale(1.1) rotate(15deg);
+        box-shadow: 0 6px 20px rgba(0, 184, 212, 0.6);
+    }
+
+    .picture-actions {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        z-index: 6;
+    }
+
+    .picture-actions > summary {
+        list-style: none;
+    }
+
+    .picture-actions > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .picture-action-menu {
+        position: absolute;
+        right: 0;
+        bottom: 58px;
+        min-width: 150px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+        border: 1px solid #dbe6f3;
+        padding: 0.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .picture-action-btn {
+        border: none;
+        background: #f8fbff;
+        color: #1f3b57;
+        border-radius: 8px;
+        padding: 0.5rem 0.7rem;
+        text-align: left;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+
+    .picture-action-btn:hover {
+        background: #eaf3ff;
+    }
+
+    .picture-action-btn.danger {
+        background: #fff2f2;
+        color: #c62828;
+    }
+
+    .picture-action-btn.danger:hover {
+        background: #ffe6e6;
+    }
+
+    .profile-info {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .profile-name {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(45deg, #fff, #e3f2fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-email {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .profile-role {
+        display: inline-block;
+        padding: 0.4rem 1.2rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 25px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .profile-details {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .profile-details p {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+    }
+
+    .profile-content {
+        background: var(--card-bg);
+        border-radius: 0 0 20px 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        position: relative;
+        top: -10px;
+        z-index: 1;
+    }
+
+    .message-modal .modal-content {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 22px 50px rgba(20, 45, 72, 0.24);
+        background: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    .message-modal {
+        z-index: 20000 !important;
+    }
+
+    .message-modal .modal-dialog {
+        z-index: 20001 !important;
+    }
+
+    .message-modal .modal-header {
+        border-bottom: none;
+        color: white;
+        padding: 1.1rem 1.4rem;
+    }
+
+    .message-modal .modal-body {
+        padding: 1.4rem;
+        font-size: 1rem;
+        color: #24384d;
+    }
+
+    .message-modal.success .modal-header {
+        background: linear-gradient(135deg, #1d8f4d 0%, #2bb673 100%);
+    }
+
+    .message-modal.error .modal-header,
+    .message-modal.danger .modal-header {
+        background: linear-gradient(135deg, #c53030 0%, #ef5350 100%);
+    }
+
+    .message-modal.warning .modal-header {
+        background: linear-gradient(135deg, #b7791f 0%, #f6ad55 100%);
+    }
+
+    .message-modal.info .modal-header {
+        background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+    }
+
+    .nav-tabs {
+        border-bottom: 3px solid #e8eaf6;
+        margin-bottom: 2.5rem;
+        gap: 10px;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 600;
+        padding: 1rem 2rem;
+        transition: all 0.3s ease;
+        border-radius: 10px 10px 0 0;
+        position: relative;
+        overflow: hidden;
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: var(--primary-color);
+        background: rgba(41, 98, 255, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background: rgba(41, 98, 255, 0.1);
+        border-bottom: 3px solid var(--secondary-color);
+    }
+
+    .nav-tabs .nav-link i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+
+    .tab-content {
+        padding: 0 0.5rem;
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-section {
+        background: var(--light-bg);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-left: 5px solid var(--secondary-color);
+        transition: transform 0.3s ease;
+    }
+
+    .form-section:hover {
+        transform: translateX(5px);
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e8eaf6;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .section-title i {
+        color: var(--secondary-color);
+        font-size: 1.6rem;
+        background: rgba(41, 98, 255, 0.1);
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label i {
+        color: var(--secondary-color);
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 999px;
+        padding: 0.9rem 1.2rem;
+        border: 1.8px solid #d7e3f0;
+        transition: all 0.25s ease;
+        font-size: 0.98rem;
+        background: #ffffff;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .form-control::placeholder {
+        color: #90a4ae;
+        font-weight: 500;
+    }
+
+    textarea.form-control {
+        border-radius: 18px;
+        min-height: 110px;
+        padding-top: 0.95rem;
+        padding-bottom: 0.95rem;
+        line-height: 1.45;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 0.22rem rgba(41, 98, 255, 0.16), 0 8px 20px rgba(41, 98, 255, 0.14);
+        transform: translateY(-1px);
+        background: #fcfeff;
+    }
+
+    .form-control:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .profile-completion {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        border: 2px dashed var(--secondary-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .completion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .completion-percentage {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress {
+        height: 12px;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.5);
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        background: linear-gradient(90deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.4) 50%, 
+            transparent 100%);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .completion-text {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--success-color);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .info-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #1a237e 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(41, 98, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0 auto;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(41, 98, 255, 0.4);
+        background: linear-gradient(135deg, #1a237e 0%, var(--secondary-color) 100%);
+    }
+
+    .btn-change-password {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #ff6d00 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 145, 0, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-change-password:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 145, 0, 0.4);
+    }
+
+    .btn-delete-account {
+        background: linear-gradient(135deg, #ff1744 0%, #d50000 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 23, 68, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-delete-account:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 23, 68, 0.4);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e8eaf6;
+        flex-wrap: wrap;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        color: #e0e0e0;
+        background: linear-gradient(135deg, #e3f2fd, #f5f5f5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .empty-state h4 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Floating elements for visual interest */
+    .floating-element {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+        border-radius: 10px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .profile-container {
+            padding: 15px;
+        }
+        
+        .profile-header {
+            padding: 2rem;
+        }
+        
+        .profile-name {
+            font-size: 1.8rem;
+        }
+        
+        .nav-tabs .nav-link {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 10px;
+        }
+        
+        .profile-header {
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .profile-picture-container {
+            width: 140px;
+            height: 140px;
+        }
+        
+        .profile-name {
+            font-size: 1.6rem;
+        }
+        
+        .profile-content {
+            padding: 1.5rem;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+        }
+        
+        .nav-tabs {
+            flex-wrap: wrap;
+        }
+        
+        .nav-tabs .nav-link {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-header {
+            padding: 1.25rem;
+        }
+        
+        .profile-picture-container {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .profile-name {
+            font-size: 1.4rem;
+        }
+        
+        .profile-email {
+            font-size: 1rem;
+        }
+        
+        .profile-details {
+            gap: 1rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .form-section {
+            padding: 1.25rem;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+        }
+        
+        .nav-tabs .nav-link {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+        }
+        
+        .nav-tabs .nav-link i {
+            margin-right: 5px;
+            font-size: 1rem;
+        }
+    }
+
+    /* Input field animations */
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group .form-control:focus ~ .floating-label {
+        transform: translateY(-25px) scale(0.85);
+        color: var(--secondary-color);
+    }
+
+    .floating-label {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        pointer-events: none;
+        background: white;
+        padding: 0 0.5rem;
+    }
+
+    /* Success/Error states */
+    .is-valid {
+        border-color: var(--success-color) !important;
+    }
+
+    .is-invalid {
+        border-color: var(--danger-color) !important;
+    }
+
+    .valid-feedback,
+    .invalid-feedback {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .valid-feedback {
+        color: var(--success-color);
+    }
+
+    .invalid-feedback {
+        color: var(--danger-color);
+    }
+
+    /* Modern Footer Styles */
+    .modern-footer {
+        background: #2c3e50;
+        color: #ffffff;
+        padding: 1.5rem 0;
+        margin-top: 2rem;
+        border-top: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .footer-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #ffffff;
+    }
+
+    .footer-brand i {
+        font-size: 1.4rem;
+        color: #ffd700;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+
+    .footer-text {
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .footer-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-links a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        padding: 0.4rem 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .footer-links a:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer-links .separator {
+        color: rgba(255, 255, 255, 0.4);
+        margin: 0 0.25rem;
+    }
+
+    .logout-modal .modal-content {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 22px 50px rgba(20, 45, 72, 0.24);
+    }
+
+    .logout-modal .modal-header {
+        background: #2c3e50;
+        color: #ffffff;
+        border-bottom: none;
+        padding: 1.1rem 1.4rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .logout-modal .modal-header h3 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 600;
+    }
+
+    .logout-modal .modal-body {
+        text-align: center;
+        padding: 1.5rem;
+        color: #24384d;
+        font-size: 1rem;
+    }
+
+    .logout-modal .modal-footer {
+        border-top: 1px solid #ececec;
+        padding: 1rem 1.25rem 1.25rem;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .btn-logout-confirm,
+    .btn-logout-cancel {
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.98rem;
+    }
+
+    .btn-logout-confirm {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: #ffffff;
+    }
+
+    .btn-logout-confirm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(231, 76, 60, 0.35);
+    }
+
+    .btn-logout-cancel {
+        background: #95a5a6;
+        color: #ffffff;
+    }
+
+    .btn-logout-cancel:hover {
+        background: #7f8c8d;
+    }
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark" style="background-color: #2c3e50; padding: 1rem 2rem;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    {{ user.get_full_name|default:user.username }}
+                </span>
+                <a href="#" class="btn btn-sm btn-light" onclick="showLogoutModal(); return false;">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="modal fade logout-modal" id="logoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="fas fa-exclamation-circle me-2"></i> Confirm Logout
+                    </h3>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to logout?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-logout-confirm" onclick="confirmLogout()">Yes, Logout</button>
+                    <button type="button" class="btn-logout-cancel" onclick="closeLogoutModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-picture-container">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+                {% else %}
+                    <div class="profile-picture" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper|default:"" }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'update_profile_picture' %}" enctype="multipart/form-data" id="pictureForm" style="display: none;">
+                    {% csrf_token %}
+                    <input type="file" name="profile_picture" accept="image/*" id="pictureInput" onchange="document.getElementById('pictureForm').submit()">
+                </form>
+
+                <details class="picture-actions">
+                    <summary class="profile-picture-settings" title="Profile Picture Settings" aria-label="Profile Picture Settings">
+                        <i class="fas fa-cog"></i>
+                    </summary>
+                    <div class="picture-action-menu">
+                        <button type="button" class="picture-action-btn" onclick="document.getElementById('pictureInput').click()">
+                            <i class="fas fa-camera me-1"></i> Update Photo
+                        </button>
+                        <form method="post" action="{% url 'delete_profile_picture' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="picture-action-btn danger">
+                                <i class="fas fa-trash me-1"></i> Delete Photo
+                            </button>
+                        </form>
+                    </div>
+                </details>
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ user.get_full_name|default:user.username }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                <span class="profile-role">{{ user.get_role_display }}</span>
+
+                {% if user.phone %}
+                    <p class="mt-2">
+                        <i class="fas fa-phone me-1"></i> {{ user.phone }}
+                    </p>
+                {% endif %}
+
+                {% if age %}
+                    <p class="mb-0">
+                        <i class="fas fa-birthday-cake me-1"></i> {{ age }} years
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Profile Completion -->
+            <div class="profile-completion">
+                <div class="completion-header">
+                    <h5 class="mb-0">Complete Your Profile</h5>
+                    <span class="completion-percentage">{{ completion_percentage|floatformat:0 }}%</span>
+                </div>
+
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: {{ completion_percentage }}%"
+                         aria-valuenow="{{ completion_percentage }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+
+                <p class="completion-text">
+                    {{ completed_fields }} of {{ total_fields }} required fields completed.
+                    {% if completion_percentage >= 100 %}
+                        Great! Your profile is fully complete.
+                    {% elif completion_percentage >= 70 %}
+                        Almost done. Please fill remaining details to complete your profile.
+                    {% elif completion_percentage >= 30 %}
+                        Good progress. Add more profile details for better service.
+                    {% else %}
+                        Your profile has just started. Please complete basic and contact details.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="profileTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab"
+                            data-bs-target="#personal" type="button" role="tab">
+                        <i class="fas fa-user me-1"></i> Personal Info
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="contact-tab" data-bs-toggle="tab"
+                            data-bs-target="#contact" type="button" role="tab">
+                        <i class="fas fa-address-book me-1"></i> Contact Info
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documents-tab" data-bs-toggle="tab"
+                            data-bs-target="#documents" type="button" role="tab">
+                        <i class="fas fa-id-card me-1"></i> Documents
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab"
+                            data-bs-target="#security" type="button" role="tab">
+                        <i class="fas fa-shield-alt me-1"></i> Security
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="profileTabContent">
+                <!-- Personal Info Tab -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-info-circle"></i> Basic Information
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">{{ form.first_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">{{ form.last_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email Address *</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone Number *</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Date of Birth</label>
+                                    {{ form.date_of_birth }}
+                                    {% if form.date_of_birth.errors %}
+                                        <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Gender</label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                        <div class="text-danger">{{ form.gender.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-home"></i> Address Information
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Full Address *</label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                        <div class="text-danger">{{ form.address.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Landmark</label>
+                                    {{ form.landmark }}
+                                    {% if form.landmark.errors %}
+                                        <div class="text-danger">{{ form.landmark.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">City *</label>
+                                    {{ form.city }}
+                                    {% if form.city.errors %}
+                                        <div class="text-danger">{{ form.city.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">State *</label>
+                                    {{ form.state }}
+                                    {% if form.state.errors %}
+                                        <div class="text-danger">{{ form.state.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Pincode *</label>
+                                    {{ form.pincode }}
+                                    {% if form.pincode.errors %}
+                                        <div class="text-danger">{{ form.pincode.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contact Info Tab -->
+                <div class="tab-pane fade" id="contact" role="tabpanel">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-phone"></i> Contact Information
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Alternate Phone</label>
+                                    {{ form.alternate_phone }}
+                                    {% if form.alternate_phone.errors %}
+                                        <div class="text-danger">{{ form.alternate_phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Emergency Contact Name</label>
+                                    {{ form.emergency_contact_name }}
+                                    {% if form.emergency_contact_name.errors %}
+                                        <div class="text-danger">{{ form.emergency_contact_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Emergency Contact Number</label>
+                                    {{ form.emergency_contact }}
+                                    {% if form.emergency_contact.errors %}
+                                        <div class="text-danger">{{ form.emergency_contact.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents" role="tabpanel">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-id-card"></i> Identity Documents
+                            </h3>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Your documents are securely stored and only used for verification purposes.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Aadhar Number</label>
+                                    {{ form.aadhar_number }}
+                                    {% if form.aadhar_number.errors %}
+                                        <div class="text-danger">{{ form.aadhar_number.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">12-digit Aadhar number (optional)</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">PAN Number</label>
+                                    {{ form.pan_number }}
+                                    {% if form.pan_number.errors %}
+                                        <div class="text-danger">{{ form.pan_number.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted">10-character PAN number (optional)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-key"></i> Change Password
+                        </h3>
+
+                        <div class="info-card">
+                            <div class="info-label">Last Password Change</div>
+                            <div class="info-value">
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"F d, Y H:i" }}
+                                {% else %}
+                                    Never changed
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{% url 'request_change_password' %}" class="btn btn-change-password">
+                                <i class="fas fa-key me-1"></i> Change Password
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-trash-alt"></i> Account Deletion
+                        </h3>
+
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>Warning:</strong> Deleting your account is permanent and cannot be undone.
+                            All your complaints and data will be permanently deleted.
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{% url 'delete_account' %}" class="btn btn-delete-account">
+                                <i class="fas fa-trash-alt me-1"></i> Delete Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if forloop.first %}
+                <div class="modal fade message-modal {{ message.tags }}" id="messageModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title mb-0">
+                                    {% if 'success' in message.tags %}
+                                        <i class="fas fa-circle-check me-2"></i>Success
+                                    {% elif 'error' in message.tags or 'danger' in message.tags %}
+                                        <i class="fas fa-triangle-exclamation me-2"></i>Error
+                                    {% elif 'warning' in message.tags %}
+                                        <i class="fas fa-triangle-exclamation me-2"></i>Warning
+                                    {% else %}
+                                        <i class="fas fa-circle-info me-2"></i>Message
+                                    {% endif %}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {{ message }}
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const logoutModalElement = document.getElementById('logoutModal')
+        const logoutModal = logoutModalElement ? new bootstrap.Modal(logoutModalElement, {
+            backdrop: true,
+            keyboard: true
+        }) : null
+
+        function showLogoutModal() {
+            if (logoutModal) {
+                logoutModal.show()
+            }
+        }
+
+        function closeLogoutModal() {
+            if (logoutModal) {
+                logoutModal.hide()
+            }
+        }
+
+        function confirmLogout() {
+            window.location.href = "{% url 'logout' %}"
+        }
+
+        // Initialize Bootstrap tabs
+        const triggerTabList = document.querySelectorAll('#profileTab button')
+        triggerTabList.forEach(triggerEl => {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+
+            triggerEl.addEventListener('click', event => {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        })
+
+        function activateTabFromHash() {
+            const hash = window.location.hash
+            if (!hash) return
+
+            const tabButton = document.querySelector(`#profileTab button[data-bs-target="${hash}"]`)
+            if (tabButton) {
+                const tabInstance = new bootstrap.Tab(tabButton)
+                tabInstance.show()
+            }
+        }
+
+        window.addEventListener('hashchange', activateTabFromHash)
+        document.addEventListener('DOMContentLoaded', activateTabFromHash)
+
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form')
+            forms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    // Client-side validation can be added here
+                    console.log('Form submitted')
+                })
+            })
+
+            // Format phone numbers as user types
+            const phoneInputs = document.querySelectorAll('input[name*="phone"]')
+            phoneInputs.forEach(input => {
+                input.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '')
+                    if (value.length > 10) {
+                        value = value.substring(0, 10)
+                    }
+                    e.target.value = value
+                })
+            })
+
+            // Format pincode
+            const pincodeInput = document.querySelector('input[name="pincode"]')
+            if (pincodeInput) {
+                pincodeInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '')
+                    if (value.length > 6) {
+                        value = value.substring(0, 6)
+                    }
+                    e.target.value = value
+                })
+            }
+
+            // Format Aadhar number
+            const aadharInput = document.querySelector('input[name="aadhar_number"]')
+            if (aadharInput) {
+                aadharInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '')
+                    if (value.length > 12) {
+                        value = value.substring(0, 12)
+                    }
+                    e.target.value = value
+                })
+            }
+
+            // Format PAN number (uppercase)
+            const panInput = document.querySelector('input[name="pan_number"]')
+            if (panInput) {
+                panInput.addEventListener('input', function(e) {
+                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                    if (value.length > 10) {
+                        value = value.substring(0, 10)
+                    }
+                    e.target.value = value
+                })
+            }
+
+            const messageModal = document.getElementById('messageModal')
+            if (messageModal) {
+                const messageModalInstance = new bootstrap.Modal(messageModal, {
+                    backdrop: false,
+                    keyboard: true
+                })
+
+                messageModal.addEventListener('shown.bs.modal', function () {
+                    // Keep profile page scrollable even when the dialog is open.
+                    document.body.classList.remove('modal-open')
+                    document.body.style.overflow = 'auto'
+                    document.body.style.paddingRight = ''
+                })
+
+                messageModalInstance.show()
+            }
+        })
+    </script>
+
+    <!-- Footer -->
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="#"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="#"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

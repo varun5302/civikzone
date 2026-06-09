@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>My Complaints - CivicZoneSolution</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <a href="{% url 'dashboard' %}" class="logo-container">
+                <i class="fas fa-city"></i>
+                <div class="logo-text">
+                    <span class="civic">Civic</span>
+                    <span class="zone">Zone</span>
+                    <span class="solution">Solution</span>
+                </div>
+            </a>
+        </div>
+        <div class="header-right">
+            <span class="user-welcome">
+                <i class="fas fa-user-circle"></i>
+                Welcome, {{ user.get_full_name|default:user.username }}!
+            </span>
+            <div class="header-links">
+                <!-- Quick Actions Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'submit_complaint' %}">
+                            <i class="fas fa-plus-circle"></i> New Complaint
+                        </a>
+                        <a href="{% url 'dashboard' %}">
+                            <i class="fas fa-list"></i> View All Complaints
+                        </a>
+                        <a href="{% url 'complaint_analysis' %}">
+                            <i class="fas fa-chart-pie"></i> Complaint Analysis
+                        </a>
+                        <a href="{% url 'feedback' %}">
+                            <i class="fas fa-comment-dots"></i> Submit Feedback
+                        </a>
+                    </div>
+                </div>
+
+                <!-- My Account Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="fas fa-user-cog"></i> My Account
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="{% url 'user_profile' %}">
+                            <i class="fas fa-id-card"></i> My Profile
+                        </a>
+                        <a href="{% url 'user_profile' %}#documents">
+                            <i class="fas fa-file-alt"></i> Document Number
+                        </a>
+                        <a href="{% url 'user_profile' %}#security">
+                            <i class="fas fa-key"></i> Change Password
+                        </a>
+                    </div>
+                </div>
+
+                <a href="#" onclick="showLogoutModal(); return false;" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Custom Logout Confirmation Modal -->
+    <div id="logoutModal" class="logout-modal">
+        <div class="logout-modal-content">
+            <div class="logout-modal-header">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Confirm Logout</h3>
+            </div>
+            <div class="logout-modal-body">
+                <p>Are you sure you want to logout?</p>
+            </div>
+            <div class="logout-modal-footer">
+                <button onclick="confirmLogout()" class="btn-logout-confirm">Yes, Logout</button>
+                <button onclick="closeLogoutModal()" class="btn-logout-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <main style="padding: 20px;">
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 10px; margin: 10px 0; border-radius: 5px; background-color: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="filter-section" style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+            <strong>Filter by:</strong>
+            <select id="filterSelect" onchange="handleFilterChange()">
+                <option value="">All</option>
+                <option value="pending" {% if filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="progress" {% if filter == 'progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if filter == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+        </div>
+
+        <script>
+            function handleFilterChange() {
+                const filter = document.getElementById('filterSelect').value;
+                const url = new URL(window.location);
+                if (filter) {
+                    url.searchParams.set('filter', filter);
+                } else {
+                    url.searchParams.delete('filter');
+                }
+                url.searchParams.set('page', '1');
+                window.location.href = url.toString();
+            }
+        </script>
+
+        <div class="table-wrapper">
+        <table>
+            <tr>
+                <th style="min-width:90px;max-width:110px;">Submitted</th>
+                <th style="min-width:90px;max-width:110px;">Last Updated</th>
+                <th style="min-width:90px;max-width:110px;">Resolved</th>
+                <th style="min-width:120px;max-width:150px;">Category</th>
+                <th style="min-width:120px;max-width:150px;">Subcategory</th>
+                <th style="min-width:120px;max-width:150px;">Zone</th>
+                <th style="min-width:180px;max-width:300px;">Location</th>
+                <th style="min-width:180px;max-width:300px;">Full Address</th>
+                <th style="min-width:180px;max-width:300px;">Description</th>
+                <th style="min-width:70px;max-width:90px;">Image</th>
+                <th style="min-width:90px;max-width:110px;text-align:center;">Status</th>
+                <th style="min-width:110px;max-width:130px;text-align:center;">Action</th>
+            </tr>
+
+            {% if complaints %}
+                {% for complaint in complaints %}
+                <tr>
+                    <td>{{ complaint.complaint_date|date:"d M Y" }}<br><small class="text-muted">{{ complaint.complaint_date|date:"H:i" }}</small></td>
+                    <td>{{ complaint.updated_at|date:"d M Y" }}<br><small class="text-muted">{{ complaint.updated_at|date:"H:i" }}</small></td>
+                    <td>
+                        {% if complaint.resolved_at %}
+                            {{ complaint.resolved_at|date:"d M Y" }}<br><small class="text-muted">{{ complaint.resolved_at|date:"H:i" }}</small>
+                        {% else %}
+                            <span class="text-muted">Not Resolved Yet</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ complaint.get_category_display }}</td>
+                    <td>{{ complaint.subcategory }}</td>
+                    <td>{{ complaint.zone }}</td>
+                    <td title="{{ complaint.location }}">{{ complaint.location|truncatechars:50 }}</td>
+                    <td title="{{ complaint.address }}">{{ complaint.address|truncatechars:50|default:"—" }}</td>
+                    <td class="description-cell">{{ complaint.description|truncatechars:100 }}</td>
+                    <td>
+                        {% if complaint.proof_image %}
+                            <img
+                                src="{{ complaint.proof_image.url }}"
+                                alt="Complaint image"
+                                class="complaint-image-thumb"
+                                onclick="openImageModal('{{ complaint.proof_image.url }}', '{{ complaint.complaint_id }}')"
+                                title="Click to enlarge"
+                            />
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">
+                        {% if complaint.status == 'Pending' %}
+                            <span class="status-pending"><strong>{{ complaint.status }}</strong></span>
+                        {% elif complaint.status == 'In Progress' %}
+                            <span class="status-progress"><strong>{{ complaint.status }}</strong></span>
+                        {% elif complaint.status == 'Resolved' %}
+                            <span class="status-resolved"><strong>{{ complaint.status }}</strong></span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">
+                        {% if complaint.status == 'Pending' %}
+                            <a href="{% url 'complaint_detail' complaint.complaint_id %}" class="btn btn-sm" style="background-color: #17a2b8; color: white; text-decoration: none; padding: 0.5rem 1rem; margin-bottom: 0.9rem; border-radius: 4px; transition: background-color 0.3s; margin-right: 0.5rem; width: 80px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">View</a>
+                            <a href="{% url 'edit_complaint' complaint.complaint_id %}" class="btn btn-sm" style="background-color: #34495e; color: white; text-decoration: none; padding: 0.5rem 1rem; margin-bottom: 0.9rem; border-radius: 4px; transition: background-color 0.3s; margin-right: 0.5rem; width: 80px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">Edit</a>
+                            <a href="{% url 'delete_complaint' complaint.complaint_id %}" class="btn btn-sm" style="background-color: #e74c3c; color: white; text-decoration: none; margin-right: 0.5rem; margin-bottom: 0.9rem ;padding: 0.5rem 1rem; border-radius: 4px; transition: background-color 0.3s; width: 80px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">Delete</a>
+                        {% else %}
+                            <a href="{% url 'complaint_detail' complaint.complaint_id %}" class="btn btn-sm" style="background-color: #17a2b8; color: white; text-decoration: none; padding: 0.5rem 1rem; margin-bottom: 0.9rem; border-radius: 4px; transition: background-color 0.3s; margin-right: 0.5rem; width: 80px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">View</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="12" style="text-align: center; padding: 40px 20px;">
+                        <div class="empty-state">
+                            {% if filter == 'pending' %}
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <h3 class="empty-state-title">No Pending Complaints</h3>
+                                <p class="empty-state-text">You don't have any pending complaints at the moment.</p>
+                                <a href="{% url 'submit_complaint' %}" class="empty-state-btn">
+                                    <i class="fas fa-plus-circle"></i> Submit New Complaint
+                                </a>
+                            {% elif filter == 'progress' %}
+                                <div class="empty-state-icon progress-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <h3 class="empty-state-title">No Complaints In Progress</h3>
+                                <p class="empty-state-text">There are no complaints currently being processed.</p>
+                            {% elif filter == 'resolved' %}
+                                <div class="empty-state-icon resolved-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h3 class="empty-state-title">No Resolved Complaints</h3>
+                                <p class="empty-state-text">You don't have any resolved complaints yet.</p>
+                            {% else %}
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-inbox"></i>
+                                </div>
+                                <h3 class="empty-state-title">No Complaints Yet</h3>
+                                <p class="empty-state-text">You haven't submitted any complaints. Start by reporting an issue in your area.</p>
+                                <a href="{% url 'submit_complaint' %}" class="empty-state-btn">
+                                    <i class="fas fa-plus-circle"></i> Submit Your First Complaint
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endif %}
+        </table>
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ start_item }} to {{ end_item }} of {{ total_rows }} complaints
+            </div>
+            <div class="pagination-controls">
+                <div class="items-per-page">
+                    <label>Items per page:</label>
+                    <select id="itemsPerPage" onchange="changeItemsPerPage(this.value)">
+                        <option value="5" {% if items_per_page == 5 %}selected{% endif %}>5</option>
+                        <option value="10" {% if items_per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="20" {% if items_per_page == 20 %}selected{% endif %}>20</option>
+                        <option value="50" {% if items_per_page == 50 %}selected{% endif %}>50</option>
+                    </select>
+                </div>
+                <div class="page-numbers">
+                    {% if complaints.has_previous %}
+                        <a href="?page={{ complaints.previous_page_number }}&items={{ items_per_page }}&filter={{ filter }}" class="pagination-btn">‹</a>
+                    {% else %}
+                        <span class="pagination-btn disabled">‹</span>
+                    {% endif %}
+                    
+                    {% if current_page > 3 %}
+                        <a href="?page=1&items={{ items_per_page }}&filter={{ filter }}" class="pagination-btn">1</a>
+                        {% if current_page > 4 %}
+                            <span class="pagination-btn disabled">...</span>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% for i in page_range %}
+                        <a href="?page={{ i }}&items={{ items_per_page }}&filter={{ filter }}" class="pagination-btn {% if i == current_page %}active{% endif %}">
+                            {{ i }}
+                        </a>
+                    {% endfor %}
+                    
+                    {% if current_page < total_pages|add:"-2" %}
+                        {% if current_page < total_pages|add:"-3" %}
+                            <span class="pagination-btn disabled">...</span>
+                        {% endif %}
+                        <a href="?page={{ total_pages }}&items={{ items_per_page }}&filter={{ filter }}" class="pagination-btn">{{ total_pages }}</a>
+                    {% endif %}
+                    
+                    {% if complaints.has_next %}
+                        <a href="?page={{ complaints.next_page_number }}&items={{ items_per_page }}&filter={{ filter }}" class="pagination-btn">›</a>
+                    {% else %}
+                        <span class="pagination-btn disabled">›</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <script>
+        function changeItemsPerPage(items) {
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('items', items);
+            currentUrl.searchParams.set('page', '1');
+            window.location.href = currentUrl.toString();
+        }
+        
+        // Logout Modal Functions
+        function showLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+        
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        
+        function confirmLogout() {
+            window.location.href = "{% url 'logout' %}";
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event.target == modal) {
+                closeLogoutModal();
+            }
+        }
+        </script>
+    </main>
+
+    <!-- Chatbot Widget -->
+    {% include 'chatbot/chatbot_widget.html' %}
+    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+    <script src="{% static 'js/chatbot.js' %}"></script>
+
+    <footer class="modern-footer text-center mt-5">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-city"></i>
+                    <span>CivicZone Solution</span>
+                </div>
+                <p class="footer-text">&copy; {% now "Y" %} CivicZone - Making Cities Better, Together</p>
+                <div class="footer-links">
+                    <a href="{% url 'privacy_policy' %}"><i class="fas fa-shield-alt"></i> Privacy</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'terms_and_conditions' %}"><i class="fas fa-file-contract"></i> Terms</a>
+                    <span class="separator">|</span>
+                    <a href="{% url 'support_page' %}"><i class="fas fa-phone"></i> Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Image Modal for Dashboard -->
+    <div id="complaintImageModal" class="complaint-image-modal" onclick="closeImageModal()">
+        <span class="complaint-image-modal-close" onclick="event.stopPropagation(); closeImageModal();">&times;</span>
+        <img class="complaint-image-modal-content" id="complaintImageModalContent" alt="Complaint image preview">
+        <div id="complaintImageCaption" class="complaint-image-caption"></div>
+    </div>
+
+    <script>
+        function openImageModal(imageUrl, complaintId) {
+            const modal = document.getElementById('complaintImageModal');
+            const modalImg = document.getElementById('complaintImageModalContent');
+            const caption = document.getElementById('complaintImageCaption');
+
+            modal.style.display = 'flex';
+            modalImg.src = imageUrl;
+            caption.textContent = 'Proof Image';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('complaintImageModal');
+            modal.style.display = 'none';
+        }
+    </script>
+
+    <style>
+        .complaint-image-thumb {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .complaint-image-thumb:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .complaint-image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+
+        .complaint-image-modal-content {
+            max-width: 95%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .complaint-image-modal-close {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            z-index: 10000;
+        }
+
+        .complaint-image-caption {
+            position: absolute;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 8px 14px;
+            border-radius: 8px;
+            width: auto;
+            max-width: 90%;
+            z-index: 10001;
+        }
+    </style>
+</body>
+</html>

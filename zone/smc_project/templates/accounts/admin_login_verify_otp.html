@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify OTP - Admin Login - CivicZoneSolution</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .otp-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .otp-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .otp-header i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .otp-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .otp-header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            margin-bottom: 0;
+        }
+
+        .otp-body {
+            padding: 2rem;
+        }
+
+        .email-info {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .email-info strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .email-info span {
+            color: #555;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: 0.95rem;
+        }
+
+        .otp-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background-color: #f8f9ff;
+        }
+
+        .btn-verify {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-verify:active {
+            transform: translateY(0);
+        }
+
+        .resend-section {
+            text-align: center;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .resend-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-resend {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-resend:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-danger {
+            background: #fee;
+            color: #c00;
+            padding: 1rem;
+            border-left: 4px solid #c00;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #060;
+            padding: 1rem;
+            border-left: 4px solid #060;
+        }
+
+        .login-back {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .login-back a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .login-back a:hover {
+            text-decoration: underline;
+        }
+
+        .timer {
+            color: #e74c3c;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border: 1px solid #cfe2ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #0c5dd4;
+        }
+
+        .info-box i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="otp-container">
+        <div class="otp-header">
+            <i class="fas fa-lock"></i>
+            <h3>Verify Your Identity</h3>
+            <p>Enter the OTP sent to your email</p>
+        </div>
+
+        <div class="otp-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="email-info">
+                <strong><i class="fas fa-envelope"></i> OTP Sent To:</strong>
+                <span>{{ email }}</span>
+            </div>
+
+            <form method="POST" action="{% url 'admin_login_verify_otp' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="otp"><i class="fas fa-key"></i> Enter OTP</label>
+                    <input 
+                        type="text" 
+                        id="otp" 
+                        name="otp" 
+                        class="otp-input" 
+                        placeholder="000000" 
+                        maxlength="6" 
+                        pattern="[0-9]{6}"
+                        required 
+                        autocomplete="off"
+                        inputmode="numeric"
+                    >
+                    <small class="text-muted">6-digit code sent to your email</small>
+                </div>
+
+                <button type="submit" class="btn-verify">
+                    <i class="fas fa-check-circle"></i> Verify OTP
+                </button>
+            </form>
+
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <strong>Security Note:</strong> OTP expires in 5 minutes. Do not share your OTP with anyone.
+            </div>
+
+            <div class="resend-section">
+                <div class="resend-text">Didn't receive OTP?</div>
+                <a href="{% url 'admin_resend_otp' %}" class="btn-resend">
+                    <i class="fas fa-redo"></i> Resend OTP
+                </a>
+            </div>
+
+            <div class="login-back">
+                <a href="{% url 'admin_login' %}"><i class="fas fa-arrow-left"></i> Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto format OTP input - only numbers
+        document.getElementById('otp').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value.length === 6) {
+                // Optionally auto-submit after 6 digits
+            }
+        });
+
+        // Auto-focus and select on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('otp');
+            otpInput.focus();
+        });
+    </script>
+</body>
+</html>

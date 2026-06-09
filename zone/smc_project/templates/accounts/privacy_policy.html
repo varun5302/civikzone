@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - CivicZone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            background:
+                radial-gradient(circle at 12% 12%, rgba(56, 189, 248, 0.2), transparent 30%),
+                radial-gradient(circle at 88% 2%, rgba(59, 130, 246, 0.2), transparent 36%),
+                linear-gradient(180deg, #ecf6ff 0%, #f7faff 52%, #eef4fb 100%);
+            min-height: 100vh;
+        }
+        .page-wrap {
+            max-width: 980px;
+            margin: 34px auto;
+            padding: 0 14px 24px;
+        }
+        .hero {
+            background: linear-gradient(130deg, #1d4f91 0%, #2f6fb9 100%);
+            border-radius: 18px;
+            padding: 24px 24px;
+            color: #fff;
+            box-shadow: 0 18px 36px rgba(29, 79, 145, 0.25);
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+        .hero p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 600;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #d7e7f8;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+        }
+        .block {
+            background: #f8fbff;
+            border: 1px solid #dceaf8;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 12px;
+        }
+        h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #244b77;
+            margin-bottom: 8px;
+        }
+        ul {
+            margin-bottom: 0;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .meta {
+            margin-top: 14px;
+            font-size: 0.88rem;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .editor-wrap {
+            margin-top: 14px;
+            border: 1px dashed #c9def5;
+            border-radius: 12px;
+            background: #f8fcff;
+            padding: 12px;
+        }
+        .editor-wrap h3 {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #1d4f91;
+        }
+        .editor-wrap textarea {
+            width: 100%;
+            min-height: 180px;
+            border: 1px solid #d7e7f8;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.92rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            margin-bottom: 10px;
+        }
+        .btn-edit {
+            border: 0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+            background: #1d4f91;
+            color: #fff;
+        }
+        .btn-edit-secondary {
+            border: 1px solid #1d4f91;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+            background: #fff;
+            color: #1d4f91;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="hero">
+            <h1 class="h3">Privacy Policy</h1>
+            <p>Clear, transparent and secure handling of your complaint data.</p>
+        </div>
+
+        <div class="content-card">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div>{{ privacy_text|linebreaks }}</div>
+            <p class="meta">Last updated: {{ privacy_last_updated|date:"d M Y" }}</p>
+
+            {% if can_edit_footer %}
+                <div class="editor-wrap">
+                    <h3>Administrator Option</h3>
+                    <button type="button" class="btn-edit" id="showEditPrivacy">Change Privacy</button>
+                    <form method="post" id="editPrivacyForm" style="display:none; margin-top:10px;">
+                        {% csrf_token %}
+                        <textarea name="privacy_content">{{ privacy_text }}</textarea>
+                        <button type="submit" class="btn-edit">Save Privacy</button>
+                        <button type="button" class="btn-edit-secondary" id="cancelEditPrivacy">Cancel</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if can_edit_footer %}
+        <script>
+            (function () {
+                const showBtn = document.getElementById('showEditPrivacy');
+                const form = document.getElementById('editPrivacyForm');
+                const cancelBtn = document.getElementById('cancelEditPrivacy');
+                if (!showBtn || !form || !cancelBtn) {
+                    return;
+                }
+                showBtn.addEventListener('click', function () {
+                    form.style.display = 'block';
+                    showBtn.style.display = 'none';
+                });
+                cancelBtn.addEventListener('click', function () {
+                    form.style.display = 'none';
+                    showBtn.style.display = 'inline-block';
+                });
+            })();
+        </script>
+    {% endif %}
+</body>
+</html>

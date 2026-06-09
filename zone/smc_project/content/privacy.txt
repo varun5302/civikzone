@@ -1,0 +1,17 @@
+We collect only the data needed to manage complaints and provide civic services.
+
+Data We Collect
+- Profile details: name, email, phone, address
+- Complaint details: category, description, location, media
+- System logs for security and troubleshooting
+
+How We Use Data
+- To process and track complaints
+- To send status updates and notifications
+- To improve service quality and reporting
+
+Data Sharing
+Your data is shared only with authorized municipal staff for complaint resolution.
+
+Security
+We apply role-based access, audit logs, and secure handling for user records.
