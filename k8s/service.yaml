@@ -7,5 +7,5 @@ spec:
     app: civikzone
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8000
   type: NodePort
