@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: civikzone
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: civikzone
+  template:
+    metadata:
+      labels:
+        app: civikzone
+    spec:
+      containers:
+      - name: civikzone
+        image: varun5291/civikzone:latest
+        ports:
+        - containerPort: 3000

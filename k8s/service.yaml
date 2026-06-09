@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: civikzone-service
+spec:
+  selector:
+    app: civikzone
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: NodePort
